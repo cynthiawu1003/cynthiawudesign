@@ -265,6 +265,79 @@
       footer > span { display: block; }
       footer .mono { font-size: 11px; }
 
+
+      /* ---------- interactive SQL demo (Cursor-style) ---------- */
+      .demo { margin-top: 3.5rem; }
+      .demo-caption { color: var(--ink-soft); margin: 0 0 1rem; }
+      kbd {
+        display: inline-block;
+        padding: 0.1em 0.5em;
+        border: 1px solid currentColor;
+        border-radius: 5px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.85em;
+        line-height: 1.4;
+        opacity: 0.85;
+      }
+      .editor {
+        background: #14120b;
+        border: 1px solid rgba(237, 236, 236, 0.12);
+        border-radius: 14px;
+        overflow: hidden;
+        cursor: pointer;
+        outline: none;
+      }
+      .editor:focus-visible { border-color: #f54e00; }
+      .editor-bar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0.7rem 1rem;
+        border-bottom: 1px solid rgba(237, 236, 236, 0.1);
+      }
+      .ed-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(237, 236, 236, 0.18);
+      }
+      .editor-title {
+        margin-left: 0.4rem;
+        color: rgba(237, 236, 236, 0.45);
+        font-size: 12.5px;
+      }
+      .editor-code {
+        margin: 0;
+        padding: 1.1rem 1.2rem 0.3rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 14px;
+        line-height: 1.9;
+        color: #edecec;
+        white-space: pre;
+        overflow-x: auto;
+        min-height: 225px;
+      }
+      .editor-hint {
+        margin: 0;
+        padding: 0.3rem 1.2rem 1.1rem;
+        color: rgba(237, 236, 236, 0.4);
+        font-size: 12.5px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      .editor .kw, .editor .str, .editor .ghost, .editor .editor-done { font-size: inherit; }
+      .editor .kw { color: #ff8a3d; }
+      .editor .str { color: #9ece9a; }
+      .editor .ghost { color: rgba(237, 236, 236, 0.35); }
+      .editor .editor-done { color: rgba(237, 236, 236, 0.4); }
+      .caret {
+        display: inline-block;
+        width: 8px;
+        height: 1.1em;
+        background: #f54e00;
+        vertical-align: text-bottom;
+        animation: caret-blink 1.1s steps(2, start) infinite;
+      }
+      @keyframes caret-blink { 50% { opacity: 0; } }
     </style>
   </head>
   <body>
@@ -286,6 +359,20 @@
           I studied statistics and economics at <a class="org-link" data-logo="berkeley" href="https://www.berkeley.edu" target="_blank" rel="noopener">UC Berkeley</a> and started my career in data science before discovering my passion for design. That journey still shapes how I approach problems today.
         </p>
       </header>
+
+
+      <!-- Interactive SQL demo -->
+      <section class="demo">
+        <p class="demo-caption">I write SQL. Try the Cursor way &mdash; press <kbd>Tab</kbd> to autocomplete.</p>
+        <div class="editor" id="editor" tabindex="0" role="button" aria-label="Interactive SQL autocomplete demo. Press Tab to accept each suggestion.">
+          <div class="editor-bar">
+            <span class="ed-dot"></span><span class="ed-dot"></span><span class="ed-dot"></span>
+            <span class="editor-title">repeat_buyers.sql</span>
+          </div>
+          <pre class="editor-code" id="editor-code"></pre>
+          <p class="editor-hint" id="editor-hint"></p>
+        </div>
+      </section>
 
       <!-- Contact -->
       <section class="contact">
@@ -311,7 +398,8 @@
 
     <script>
       // Footer year
-      document.getElementById("year").textContent = new Date().getFullYear();
+      var __yearEl = document.getElementById("year");
+      if (__yearEl) __yearEl.textContent = new Date().getFullYear();
 
       // Placeholder links stay put until real URLs replace them
       document.querySelectorAll("a[data-placeholder]").forEach(function (link) {
@@ -394,6 +482,85 @@
           });
         });
 
+      })();
+
+      // Interactive SQL autocomplete demo (Cursor-style Tab completion)
+      (function () {
+        var editor = document.getElementById("editor");
+        var code = document.getElementById("editor-code");
+        var hint = document.getElementById("editor-hint");
+        if (!editor || !code || !hint) return;
+
+        var STEPS = [
+          { typed: "SELECT user_id, ", ghost: "COUNT(*) AS orders" },
+          { typed: "FROM ", ghost: "orders" },
+          { typed: "WHERE created_at >= ", ghost: "'2026-01-01'" },
+          { typed: "GROUP BY ", ghost: "user_id" },
+          { typed: "ORDER BY orders ", ghost: "DESC;" }
+        ];
+        var DONE_LINE = "-- 12,408 rows in 38ms";
+        var idx = 0;
+        var typing = false;
+
+        function esc(str) {
+          return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+        function highlight(line) {
+          var t = esc(line);
+          t = t.replace(/'[^']*'/g, function (m) { return '<span class="str">' + m + "</span>"; });
+          t = t.replace(/\b(SELECT|FROM|WHERE|GROUP BY|ORDER BY|DESC|COUNT|AS)\b/g, '<span class="kw">$1</span>');
+          return t;
+        }
+        function render() {
+          var html = "";
+          for (var i = 0; i < idx; i++) {
+            html += highlight(STEPS[i].typed + STEPS[i].ghost) + "\n";
+          }
+          if (idx < STEPS.length) {
+            html += highlight(STEPS[idx].typed)
+              + '<span class="ghost">' + esc(STEPS[idx].ghost) + '</span><span class="caret"></span>';
+          } else {
+            html += '<span class="editor-done">' + esc(DONE_LINE) + '</span><span class="caret"></span>';
+          }
+          code.innerHTML = html;
+          hint.innerHTML = idx < STEPS.length
+            ? "<kbd>Tab</kbd> to autocomplete"
+            : 'Query complete &mdash; <kbd>R</kbd> to replay';
+        }
+        function accept() {
+          if (idx >= STEPS.length || typing) return;
+          typing = true;
+          var step = STEPS[idx];
+          var n = 0;
+          var iv = setInterval(function () {
+            n = Math.min(step.ghost.length, n + 4);
+            var html = "";
+            for (var i = 0; i < idx; i++) {
+              html += highlight(STEPS[i].typed + STEPS[i].ghost) + "\n";
+            }
+            html += highlight(step.typed + step.ghost.slice(0, n))
+              + '<span class="ghost">' + esc(step.ghost.slice(n)) + '</span><span class="caret"></span>';
+            code.innerHTML = html;
+            if (n >= step.ghost.length) {
+              clearInterval(iv);
+              idx++;
+              typing = false;
+              render();
+            }
+          }, 18);
+        }
+        function reset() { idx = 0; typing = false; render(); }
+
+        editor.addEventListener("keydown", function (e) {
+          if (e.key === "Tab") { e.preventDefault(); accept(); }
+          else if (e.key === "r" || e.key === "R") { reset(); }
+        });
+        editor.addEventListener("click", function () {
+          editor.focus({ preventScroll: true });
+          accept();
+        });
+
+        render();
       })();
     </script>
   </body>
