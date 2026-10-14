@@ -189,6 +189,44 @@
         height: 100%;
         object-fit: cover;
       }
+      /* ---------- chibi portrait mode ---------- */
+      html.cursor-on .cursor-logo.is-portrait {
+        width: 140px;
+        height: 129px;
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
+        overflow: visible;
+      }
+      html.cursor-on .cursor-logo.is-portrait img {
+        object-fit: contain;
+        animation: chibi-float 3.5s ease-in-out infinite;
+      }
+      @keyframes chibi-float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+      }
+      .blink-lid {
+        display: none;
+        position: absolute;
+        width: 14%;
+        height: 16%;
+        background: #faf8f4;
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate(-50%, -50%) scaleY(0);
+      }
+      html.cursor-on .cursor-logo.is-portrait .blink-lid {
+        display: block;
+        animation: chibi-blink 4.8s infinite;
+      }
+      .blink-lid.lid-left { left: 38.5%; top: 59.2%; }
+      .blink-lid.lid-right { left: 57.7%; top: 57.5%; }
+      @keyframes chibi-blink {
+        0%, 91%, 100% { transform: translate(-50%, -50%) scaleY(0); }
+        94% { transform: translate(-50%, -50%) scaleY(1); }
+        97% { transform: translate(-50%, -50%) scaleY(0); }
+      }
 
       /* ---------- footer ---------- */
       footer {
@@ -241,7 +279,7 @@
     </div>
 
     <div class="cursor-dot" id="cursor-dot" aria-hidden="true"></div>
-    <div class="cursor-logo" id="cursor-logo" aria-hidden="true"><img id="cursor-logo-img" src="images/img-1.png" alt="" /></div>
+    <div class="cursor-logo" id="cursor-logo" aria-hidden="true"><img id="cursor-logo-img" src="images/img-1.png" alt="" /><div class="blink-lid lid-left"></div><div class="blink-lid lid-right"></div></div>
 
     <script>
       // Footer year
@@ -265,7 +303,7 @@
         if (!dot || !logo || !logoImg) return;
 
         var LOGOS = {
-          portrait: "images/img-2.jpg",
+          portrait: "images/chibi-portrait.png",
           meta: "images/img-3.png",
           minted: "images/img-4.png",
           berkeley: "images/img-5.jpg",
@@ -298,10 +336,11 @@
         function showLogo(key) {
           if (!LOGOS[key]) return;
           logoImg.src = LOGOS[key];
+          logo.classList.toggle("is-portrait", key === "portrait");
           logo.classList.add("is-visible");
         }
         function hideLogo() {
-          logo.classList.remove("is-visible");
+          logo.classList.remove("is-visible", "is-portrait");
         }
 
         document.addEventListener("mouseleave", function () {
