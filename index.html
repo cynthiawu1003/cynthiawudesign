@@ -230,18 +230,23 @@
 
       /* ---------- portrait hero ---------- */
       .portrait-hero {
-        position: relative;
         width: 96px;
         margin-bottom: 1.5rem;
       }
-      .portrait-hero img {
+      .portrait-hero svg {
         display: block;
         width: 100%;
         height: auto;
       }
-      .portrait-hero .blink-lid {
-        display: block;
-        animation: chibi-blink 4.8s infinite;
+      .portrait-hero .chibi-eye {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: svg-blink 4.8s infinite;
+      }
+      @keyframes svg-blink {
+        0%, 91%, 100% { transform: scaleY(1); }
+        94% { transform: scaleY(0.08); }
+        97% { transform: scaleY(1); }
       }
 
       /* ---------- footer ---------- */
@@ -260,9 +265,7 @@
       <!-- Intro -->
       <header class="intro">
         <div class="portrait-hero">
-          <img src="images/chibi-portrait-clean.png" alt="Chibi self-portrait of Cynthia Wu" />
-          <div class="blink-lid lid-left"></div>
-          <div class="blink-lid lid-right"></div>
+          <svg viewBox="0 0 400 336" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chibi self-portrait of Cynthia Wu"> <g fill="none" stroke="#2b2520" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"> <!-- Back hair silhouette (bob) --> <path d="M 78 262 C 55 220, 58 140, 95 85 C 125 45, 160 28, 200 26 C 240 28, 275 45, 305 85 C 342 140, 345 220, 322 262" /> <!-- Hair flicks at bottom --> <path d="M 78 262 C 70 275, 68 285, 72 295 C 80 288, 88 278, 92 268" /> <path d="M 322 262 C 330 275, 332 285, 328 295 C 320 288, 312 278, 308 268" /> <!-- Bangs --> <path d="M 105 145 L 125 105 L 145 148 L 168 100 L 190 145 L 212 102 L 235 142 L 258 108 L 280 148" /> <!-- Right side hair strand --> <path d="M 280 148 C 295 160, 300 175, 298 195" /> <!-- Face outline (jaw/chin) --> <path d="M 108 175 C 108 235, 145 278, 200 282 C 255 278, 292 235, 292 175" /> <!-- Left ear --> <path d="M 108 190 C 95 188, 88 195, 90 208 C 92 218, 100 222, 108 218" /> <!-- Right ear --> <path d="M 292 185 C 305 183, 312 190, 310 203 C 308 213, 300 217, 292 213" /> <!-- Nose (two dots) --> <path d="M 190 232 L 190 236" stroke-width="6" /> <path d="M 202 232 L 202 236" stroke-width="6" /> <!-- Mouth (w shape) --> <path d="M 183 252 Q 191 260 199 252 Q 207 260 215 252" /> </g> <!-- Eyes (filled, with highlights) - blink via scaleY --> <g class="chibi-eye" style="transform-origin: 155px 195px;"> <ellipse cx="155" cy="195" rx="23" ry="29" fill="#2b2520" /> <circle cx="163" cy="185" r="8" fill="#faf8f4" /> <circle cx="148" cy="202" r="4" fill="#faf8f4" opacity="0.7" /> </g> <g class="chibi-eye" style="transform-origin: 235px 190px;"> <ellipse cx="235" cy="190" rx="23" ry="29" fill="#2b2520" /> <circle cx="243" cy="180" r="8" fill="#faf8f4" /> <circle cx="228" cy="197" r="4" fill="#faf8f4" opacity="0.7" /> </g> <!-- Upper eyelid lines --> <g fill="none" stroke="#2b2520" stroke-width="4.5" stroke-linecap="round"> <path d="M 128 178 Q 155 165 182 178" /> <path d="M 208 173 Q 235 160 262 173" /> </g> </svg>
         </div>
         <p>Hey! I&rsquo;m <a class="name-link" data-logo="linkedin" href="https://www.linkedin.com/in/cynthia-wu-a02b978b" target="_blank" rel="noopener">Cynthia Wu</a>, a designer who writes SQL.</p>
         <p>
