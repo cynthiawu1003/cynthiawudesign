@@ -228,6 +228,23 @@
         97% { transform: translate(-50%, -50%) scaleY(0); }
       }
 
+      /* ---------- portrait hero ---------- */
+      .portrait-hero {
+        position: relative;
+        width: 96px;
+        margin-bottom: 1.5rem;
+      }
+      .portrait-hero img {
+        display: block;
+        width: 100%;
+        height: auto;
+        animation: chibi-float 3.5s ease-in-out infinite;
+      }
+      .portrait-hero .blink-lid {
+        display: block;
+        animation: chibi-blink 4.8s infinite;
+      }
+
       /* ---------- footer ---------- */
       footer {
         margin-top: 3.5rem;
@@ -243,7 +260,12 @@
 
       <!-- Intro -->
       <header class="intro">
-        <p>Hey! I&rsquo;m <a class="name-link" data-logo="portrait" href="https://www.linkedin.com/in/cynthia-wu-a02b978b" target="_blank" rel="noopener">Cynthia Wu</a>, a designer who writes SQL.</p>
+        <div class="portrait-hero">
+          <img src="images/chibi-portrait.png" alt="Chibi self-portrait of Cynthia Wu" />
+          <div class="blink-lid lid-left"></div>
+          <div class="blink-lid lid-right"></div>
+        </div>
+        <p>Hey! I&rsquo;m <a class="name-link" data-logo="linkedin" href="https://www.linkedin.com/in/cynthia-wu-a02b978b" target="_blank" rel="noopener">Cynthia Wu</a>, a designer who writes SQL.</p>
         <p>
           I&rsquo;m a lead Product Designer at <a class="org-link" data-logo="meta" href="https://www.meta.com" target="_blank" rel="noopener">Meta</a> in New York, building <a class="org-link" data-logo="figma" id="work-link" href="https://deck.cynthiawudesign.com/" target="_blank" rel="noopener">GenAI and agentic experiences</a> for businesses and consumers. Previously, I developed the e-commerce experiences at <a class="org-link" data-logo="minted" href="https://www.minted.com" target="_blank" rel="noopener">Minted</a> (series D, $30M+).
         </p>
@@ -303,7 +325,7 @@
         if (!dot || !logo || !logoImg) return;
 
         var LOGOS = {
-          portrait: "images/chibi-portrait.png",
+          linkedin: "https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png",
           meta: "images/img-3.png",
           minted: "images/img-4.png",
           berkeley: "images/img-5.jpg",
@@ -336,11 +358,11 @@
         function showLogo(key) {
           if (!LOGOS[key]) return;
           logoImg.src = LOGOS[key];
-          logo.classList.toggle("is-portrait", key === "portrait");
+          
           logo.classList.add("is-visible");
         }
         function hideLogo() {
-          logo.classList.remove("is-visible", "is-portrait");
+          logo.classList.remove("is-visible");
         }
 
         document.addEventListener("mouseleave", function () {
