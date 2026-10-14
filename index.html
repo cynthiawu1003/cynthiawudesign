@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="Cynthia Wu — data-driven designer specializing in B2B enterprise products." />
+    <link rel="icon" href="data:," />
+    <title>Cynthia Wu — Product Designer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #faf8f4;
+        --ink: #1c1a17;
+        --ink-soft: #4c4741;
+        --ink-faint: #8a8378;
+        --accent: #b34a1f;
+        --text-size: 17px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #16140f;
+          --ink: #ece7dc;
+          --ink-soft: #b7b0a1;
+          --ink-faint: #7d7668;
+          --accent: #e08a5f;
+        }
+      }
+
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-size: var(--text-size);
+        font-weight: 400;
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Single size everywhere — hierarchy is weight only (700 vs 400) */
+      h1, h2, h3, h4, h5, h6, p, span, a, li, div {
+        font-size: var(--text-size);
+        font-weight: 400;
+      }
+      h1, h2, h3, strong, b { font-weight: 700; }
+
+      .page {
+        max-width: 660px;
+        margin: 0 auto;
+        padding: clamp(3rem, 9vw, 6.5rem) 1.4rem 4rem;
+      }
+
+      /* ---------- shared ---------- */
+      .mono {
+        font-family: inherit;
+        font-size: var(--text-size);
+        font-weight: 400;
+        letter-spacing: normal;
+        text-transform: none;
+      }
+      .draft-tag {
+        font-family: inherit;
+        font-size: var(--text-size);
+        font-weight: 400;
+        letter-spacing: normal;
+        text-transform: none;
+        color: var(--ink-faint);
+      }
+      .section-head {
+        margin: 0 0 1.2rem;
+      }
+      .section-head h2 {
+        font-size: var(--text-size);
+        font-weight: 700;
+        letter-spacing: normal;
+        text-transform: none;
+        margin: 0;
+      }
+      section { margin-top: 3.5rem; }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 400;
+        background-image: linear-gradient(currentColor, currentColor);
+        background-repeat: no-repeat;
+        background-position: 50% 100%;
+        background-size: 0% 1px;
+        transition: background-size 300ms cubic-bezier(0, 0, 0.2, 1);
+      }
+      a:hover, a:focus-visible { background-size: 100% 1px; }
+      .org-link { color: inherit; font-weight: inherit; }
+
+      /* Quiet external-link affordance after each bolded clickable phrase */
+      .intro a::after {
+        content: "↗" / "";
+        display: inline-block;
+        margin-left: 0.18em;
+        font-size: 0.62em;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--accent);
+        vertical-align: 0.32em;
+      }
+
+      /* ---------- intro ---------- */
+      .intro h1 {
+        font-size: var(--text-size);
+        font-weight: 400;
+        letter-spacing: normal;
+        line-height: 1.7;
+        margin: 0 0 1rem;
+      }
+      .intro .org-link { font-weight: 700; }
+      .intro .name-link { color: inherit; font-weight: 700; }
+      .intro .lede {
+        font-family: inherit;
+        font-style: normal;
+        font-size: var(--text-size);
+        font-weight: 400;
+        line-height: 1.7;
+        color: var(--ink);
+        margin: 0 0 1rem;
+      }
+      .intro p { color: var(--ink-soft); margin: 0 0 1rem; font-weight: 400; }
+      .intro .draft-row { margin-top: 1rem; }
+      .intro .draft-row span.note { color: var(--ink-faint); font-weight: 400; }
+
+      /* ---------- contact ---------- */
+      .contact p { color: var(--ink-soft); margin: 0 0 1rem; font-weight: 400; }
+      .contact-list { list-style: none; margin: 0; padding: 0; }
+      .contact-list li { margin: 0 0 0.5rem; }
+      .contact-list a {
+        color: var(--ink);
+        font-size: calc(var(--text-size) * 0.9);
+        font-weight: 400;
+        opacity: 0.8;
+      }
+      .contact-list a span { font-size: inherit; }
+
+      /* ---------- custom cursor + logo hover (fine pointers only) ---------- */
+      .cursor-dot, .cursor-logo { display: none; }
+      @media (hover: hover) and (pointer: fine) {
+        html.cursor-on, html.cursor-on * { cursor: none; }
+        html.cursor-on .cursor-dot {
+          display: block;
+          position: fixed;
+          left: 0;
+          top: 0;
+          width: 10px;
+          height: 10px;
+          border-radius: 4px;
+          background: #acabad;
+          -webkit-backdrop-filter: blur(20px);
+          backdrop-filter: blur(20px);
+          z-index: 9999;
+          pointer-events: none;
+          opacity: 0;
+          will-change: transform;
+        }
+        html.cursor-on .cursor-dot.is-dark { background: var(--ink); }
+        html.cursor-on .cursor-logo {
+          position: fixed;
+          left: 0;
+          top: 0;
+          width: 36px;
+          height: 36px;
+          border-radius: 6px;
+          background: #fff;
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+          z-index: 9999;
+          pointer-events: none;
+          overflow: hidden;
+          will-change: transform;
+        }
+        html.cursor-on .cursor-logo.is-visible { display: block; }
+      }
+      .cursor-logo img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* ---------- footer ---------- */
+      footer {
+        margin-top: 3.5rem;
+        color: var(--ink-faint);
+        font-weight: 400;
+      }
+      footer > span { display: block; }
+
+    </style>
+  </head>
+  <body>
+    <div class="page">
+
+      <!-- Intro -->
+      <header class="intro">
+        <p>Hey! I&rsquo;m <a class="name-link" data-logo="portrait" href="https://www.linkedin.com/in/cynthia-wu-a02b978b" target="_blank" rel="noopener">Cynthia Wu</a>, a designer who writes SQL.</p>
+        <p>
+          I&rsquo;m a lead Product Designer at <a class="org-link" data-logo="meta" href="https://www.meta.com" target="_blank" rel="noopener">Meta</a> in New York, building <a class="org-link" data-logo="figma" id="work-link" href="https://www.figma.com/deck/tllv3Q0wELALBDAMH6pUVb/Cynthia-Wu-%E2%80%A2-Design?node-id=266-67100&viewport=-1979%2C-5916%2C0.44&t=6mRO4xNvMcvuwmtc-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1" target="_blank" rel="noopener">GenAI and agentic experiences</a> for businesses and consumers. Previously, I developed the e-commerce experiences at <a class="org-link" data-logo="minted" href="https://www.minted.com" target="_blank" rel="noopener">Minted</a> (series D, $30M+).
+        </p>
+        <p>
+          With over a decade of experiences across big tech and high-growth startups, I&rsquo;ve learned to ship fast to learn early, without compromising on craft.
+        </p>
+        <p>
+          I studied statistics and economics at <a class="org-link" data-logo="berkeley" href="https://www.berkeley.edu" target="_blank" rel="noopener">UC Berkeley</a> and started my career in data science before discovering my passion for design. That journey still shapes how I approach problems today.
+        </p>
+      </header>
+
+      <!-- Contact -->
+      <section class="contact">
+        <ul class="contact-list">
+          <li>
+            <a href="mailto:cynthiawu1003@gmail.com" target="_blank" rel="noopener">Email</a>
+          </li>
+          <li>
+            <a href="https://www.linkedin.com/in/cynthia-wu-a02b978b" target="_blank" rel="noopener">
+              <span>LinkedIn</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://drive.google.com/file/d/145x4Ox8LJssllN4bEpFdmcu9ShIQRZwb/view?usp=sharing" target="_blank" rel="noopener">Resume</a>
+          </li>
+        </ul>
+      </section>
+
+      <footer>
+        <span class="mono">© <span id="year">2026</span> Cynthia Wu</span>
+      </footer>
+
+    </div>
+
+    <div class="cursor-dot" id="cursor-dot" aria-hidden="true"></div>
+    <div class="cursor-logo" id="cursor-logo" aria-hidden="true"><img id="cursor-logo-img" src="images/img-1.png" alt="" /></div>
+
+    <script>
+      // Footer year
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+      // Placeholder links stay put until real URLs replace them
+      document.querySelectorAll("a[data-placeholder]").forEach(function (link) {
+        link.addEventListener("click", function (event) {
+          event.preventDefault();
+        });
+      });
+
+      // Custom cursor + logo hover (fine pointers only, claire.io-style)
+      (function () {
+        var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+        if (!finePointer.matches) return;
+
+        var dot = document.getElementById("cursor-dot");
+        var logo = document.getElementById("cursor-logo");
+        var logoImg = document.getElementById("cursor-logo-img");
+        if (!dot || !logo || !logoImg) return;
+
+        var LOGOS = {
+          portrait: "images/img-2.jpg",
+          meta: "images/img-3.png",
+          minted: "images/img-4.png",
+          berkeley: "images/img-5.jpg",
+          figma: "images/img-6.png"
+        };
+        // Preload all hover images so hovers never flicker
+        Object.keys(LOGOS).forEach(function (key) {
+          var img = new Image();
+          img.src = LOGOS[key];
+        });
+
+        document.documentElement.classList.add("cursor-on");
+
+        var x = 0, y = 0, shown = false;
+        function place() {
+          var t = "translate(" + x + "px, " + y + "px) translate(-50%, -50%)";
+          dot.style.transform = t;
+          logo.style.transform = t;
+        }
+        document.addEventListener("mousemove", function (event) {
+          x = event.clientX;
+          y = event.clientY;
+          if (!shown) {
+            shown = true;
+            dot.style.opacity = "1";
+          }
+          place();
+        }, { passive: true });
+
+        function showLogo(key) {
+          if (!LOGOS[key]) return;
+          logoImg.src = LOGOS[key];
+          logo.classList.add("is-visible");
+        }
+        function hideLogo() {
+          logo.classList.remove("is-visible");
+        }
+
+        document.addEventListener("mouseleave", function () {
+          shown = false;
+          dot.style.opacity = "0";
+          hideLogo();
+        });
+
+        document.querySelectorAll("a[data-logo]").forEach(function (link) {
+          link.addEventListener("mouseenter", function () {
+            showLogo(link.getAttribute("data-logo"));
+          });
+          link.addEventListener("mouseleave", hideLogo);
+          link.addEventListener("click", hideLogo);
+        });
+
+        document.querySelectorAll("a:not([data-logo])").forEach(function (link) {
+          link.addEventListener("mouseenter", function () {
+            dot.classList.add("is-dark");
+          });
+          link.addEventListener("mouseleave", function () {
+            dot.classList.remove("is-dark");
+          });
+        });
+
+      })();
+    </script>
+  </body>
+</html>
