@@ -266,28 +266,29 @@
       footer .mono { font-size: 11px; }
 
 
-      /* ---------- interactive SQL demo (Cursor-style) ---------- */
+      /* ---------- interactive SQL console ---------- */
       .demo { margin-top: 3.5rem; }
       .demo-caption { color: var(--ink-soft); margin: 0 0 1rem; }
-      kbd {
-        display: inline-block;
-        padding: 0.1em 0.5em;
-        border: 1px solid currentColor;
-        border-radius: 5px;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: 0.85em;
-        line-height: 1.4;
-        opacity: 0.85;
+      .sample-qs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 1rem; }
+      .sample-q {
+        font-family: inherit;
+        font-size: 14px;
+        padding: 0.45rem 0.95rem;
+        border-radius: 999px;
+        border: 1px solid var(--ink-faint);
+        background: transparent;
+        color: var(--ink);
+        cursor: pointer;
+        transition: border-color 200ms, color 200ms;
       }
+      .sample-q:hover { border-color: var(--accent); color: var(--accent); }
       .editor {
         background: #14120b;
         border: 1px solid rgba(237, 236, 236, 0.12);
         border-radius: 14px;
         overflow: hidden;
-        cursor: pointer;
         outline: none;
       }
-      .editor:focus-visible { border-color: #f54e00; }
       .editor-bar {
         display: flex;
         align-items: center;
@@ -306,16 +307,63 @@
         color: rgba(237, 236, 236, 0.45);
         font-size: 12.5px;
       }
-      .editor-code {
-        margin: 0;
-        padding: 1.1rem 1.2rem 0.3rem;
+      .editor-output {
+        padding: 1rem 1.2rem 0;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: 14px;
-        line-height: 1.9;
+        font-size: 13.5px;
+        line-height: 1.7;
         color: #edecec;
-        white-space: pre;
-        overflow-x: auto;
-        min-height: 225px;
+        max-height: 360px;
+        overflow-y: auto;
+        min-height: 120px;
+      }
+      .editor-output .q { color: #ff8a3d; margin: 0.8rem 0 0.2rem; word-break: break-word; }
+      .editor-output .q:first-child { margin-top: 0; }
+      .editor-output .dim { color: rgba(237, 236, 236, 0.45); }
+      .result-table { border-collapse: collapse; margin: 0.3rem 0 0.2rem; max-width: 100%; }
+      .result-table th {
+        text-align: left;
+        font-weight: 400;
+        color: rgba(237, 236, 236, 0.45);
+        border-bottom: 1px solid rgba(237, 236, 236, 0.18);
+        padding: 0.25rem 0.9rem 0.25rem 0;
+        white-space: nowrap;
+      }
+      .result-table td {
+        border-bottom: 1px solid rgba(237, 236, 236, 0.07);
+        padding: 0.35rem 0.9rem 0.35rem 0;
+        vertical-align: top;
+      }
+      .rows-note { color: rgba(237, 236, 236, 0.4); font-size: 12.5px; margin: 0.3rem 0 0.6rem; }
+      .answer-card {
+        border-left: 2px solid #f54e00;
+        padding: 0.1rem 0 0.1rem 0.9rem;
+        margin: 0.4rem 0 0.2rem;
+        color: #edecec;
+        max-width: 60ch;
+      }
+      .editor-inputrow {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.9rem 1.2rem 0.3rem;
+      }
+      .prompt {
+        color: #f54e00;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 13.5px;
+        white-space: nowrap;
+      }
+      #editor-input {
+        flex: 1;
+        min-width: 0;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #edecec;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 13.5px;
+        caret-color: #f54e00;
       }
       .editor-hint {
         margin: 0;
@@ -324,20 +372,12 @@
         font-size: 12.5px;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       }
-      .editor .kw, .editor .str, .editor .ghost, .editor .editor-done { font-size: inherit; }
-      .editor .kw { color: #ff8a3d; }
-      .editor .str { color: #9ece9a; }
-      .editor .ghost { color: rgba(237, 236, 236, 0.35); }
-      .editor .editor-done { color: rgba(237, 236, 236, 0.4); }
-      .caret {
-        display: inline-block;
-        width: 8px;
-        height: 1.1em;
-        background: #f54e00;
-        vertical-align: text-bottom;
-        animation: caret-blink 1.1s steps(2, start) infinite;
+      .editor-hint kbd {
+        border: 1px solid rgba(237, 236, 236, 0.35);
+        border-radius: 4px;
+        padding: 0 0.35em;
+        font-size: 11.5px;
       }
-      @keyframes caret-blink { 50% { opacity: 0; } }
     </style>
   </head>
   <body>
@@ -361,16 +401,25 @@
       </header>
 
 
-      <!-- Interactive SQL demo -->
+      <!-- Interactive SQL resume console -->
       <section class="demo">
-        <p class="demo-caption">I write SQL. Try the Cursor way &mdash; press <kbd>Tab</kbd> to autocomplete.</p>
-        <div class="editor" id="editor" tabindex="0" role="button" aria-label="Interactive SQL autocomplete demo. Press Tab to accept each suggestion.">
+        <p class="demo-caption">Don&apos;t take my word for it &mdash; query my resume like a database. Try one:</p>
+        <div class="sample-qs">
+          <button type="button" class="sample-q" data-sql="SELECT role, company, location, dates FROM experience;">Walk me through your background</button>
+          <button type="button" class="sample-q" data-sql="SELECT answer FROM interview_qa WHERE topic = 'data_in_design';">How do you use data in design?</button>
+        </div>
+        <div class="editor" id="editor">
           <div class="editor-bar">
             <span class="ed-dot"></span><span class="ed-dot"></span><span class="ed-dot"></span>
-            <span class="editor-title">repeat_buyers.sql</span>
+            <span class="editor-title">cynthia_resume.db</span>
           </div>
-          <pre class="editor-code" id="editor-code"></pre>
-          <p class="editor-hint" id="editor-hint"></p>
+          <div class="editor-output" id="editor-output" aria-live="polite"></div>
+          <div class="editor-inputrow">
+            <span class="prompt">cynthia=#</span>
+            <input id="editor-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+              aria-label="SQL query input" placeholder="SELECT * FROM experience;" />
+          </div>
+          <p class="editor-hint"><kbd>Tab</kbd> autocompletes &middot; <kbd>Enter</kbd> runs &middot; try TABLES or HELP</p>
         </div>
       </section>
 
@@ -484,83 +533,192 @@
 
       })();
 
-      // Interactive SQL autocomplete demo (Cursor-style Tab completion)
+      // Interactive SQL resume console
       (function () {
-        var editor = document.getElementById("editor");
-        var code = document.getElementById("editor-code");
-        var hint = document.getElementById("editor-hint");
-        if (!editor || !code || !hint) return;
+        var out = document.getElementById("editor-output");
+        var input = document.getElementById("editor-input");
+        if (!out || !input) return;
 
-        var STEPS = [
-          { typed: "SELECT user_id, ", ghost: "COUNT(*) AS orders" },
-          { typed: "FROM ", ghost: "orders" },
-          { typed: "WHERE created_at >= ", ghost: "'2026-01-01'" },
-          { typed: "GROUP BY ", ghost: "user_id" },
-          { typed: "ORDER BY orders ", ghost: "DESC;" }
-        ];
-        var DONE_LINE = "-- 12,408 rows in 38ms";
-        var idx = 0;
-        var typing = false;
+        var DB = {
+          experience: {
+            columns: ["role", "company", "location", "dates", "highlight"],
+            rows: [
+              ["Lead Product Designer", "Meta", "New York, NY", "Feb 2023 \u2013 present", "GenAI messaging \u00b7 Meta AI Award"],
+              ["Product Designer", "Meta", "Menlo Park, CA", "2019 \u2013 2023", ""],
+              ["Data Science Manager", "Minted", "San Francisco, CA", "2015 \u2013 2019", "e-commerce experiences"]
+            ]
+          },
+          interview_qa: {
+            columns: ["topic", "question", "answer"],
+            rows: [
+              ["background",
+               "Walk me through your background.",
+               "I\u2019m a lead Product Designer at Meta in New York, building GenAI and agentic messaging experiences. Before design, I was a Data Science Manager at Minted \u2014 I studied statistics and economics at UC Berkeley, and I still write SQL to dig into data directly when informing product decisions."],
+              ["data_in_design",
+               "How do you use data in design?",
+               "Data is my first language: I studied statistics and economics at UC Berkeley and started my career in data science. As a designer, I write SQL to explore questions hands-on, then pair what the numbers say with qualitative insight before making calls. (Sample answer \u2014 Cynthia to refine.)"]
+            ]
+          }
+        };
+
+        var WORDS = ["SELECT", "FROM", "WHERE", "LIKE", "AND", "TABLES", "HELP", "CLEAR", "*"];
+        Object.keys(DB).forEach(function (t) {
+          WORDS.push(t);
+          DB[t].columns.forEach(function (c) { WORDS.push(c); });
+        });
 
         function esc(str) {
-          return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
-        function highlight(line) {
-          var t = esc(line);
-          t = t.replace(/'[^']*'/g, function (m) { return '<span class="str">' + m + "</span>"; });
-          t = t.replace(/\b(SELECT|FROM|WHERE|GROUP BY|ORDER BY|DESC|COUNT|AS)\b/g, '<span class="kw">$1</span>');
-          return t;
+        function scrollDown() { out.scrollTop = out.scrollHeight; }
+
+        function echo(q) {
+          out.insertAdjacentHTML("beforeend",
+            '<div class="q"><span class="prompt">cynthia=#</span> ' + esc(q) + "</div>");
         }
-        function render() {
-          var html = "";
-          for (var i = 0; i < idx; i++) {
-            html += highlight(STEPS[i].typed + STEPS[i].ghost) + "\n";
+        function rowsNote(n) {
+          var ms = 2 + Math.floor(Math.random() * 8);
+          out.insertAdjacentHTML("beforeend",
+            '<div class="rows-note">' + n + (n === 1 ? " row" : " rows") + " in " + ms + "ms</div>");
+        }
+        function renderTable(cols, rows) {
+          var html = '<table class="result-table"><thead><tr>';
+          cols.forEach(function (c) { html += "<th>" + esc(c) + "</th>"; });
+          html += "</tr></thead><tbody>";
+          rows.forEach(function (r) {
+            html += "<tr>";
+            r.forEach(function (cell) { html += "<td>" + esc(cell) + "</td>"; });
+            html += "</tr>";
+          });
+          html += "</tbody></table>";
+          out.insertAdjacentHTML("beforeend", html);
+          rowsNote(rows.length);
+        }
+        function renderAnswer(rows) {
+          rows.forEach(function (r) {
+            out.insertAdjacentHTML("beforeend",
+              '<div class="answer-card">' + esc(r[r.length - 1]) + "</div>");
+          });
+          rowsNote(rows.length);
+        }
+
+        function runQuery(raw) {
+          var q = raw.trim().replace(/;+$/, "");
+          if (!q) return;
+          echo(raw.trim());
+          var up = q.toUpperCase();
+
+          if (up === "TABLES") {
+            renderTable(["table"], Object.keys(DB).map(function (t) { return [t]; }));
+            scrollDown();
+            return;
           }
-          if (idx < STEPS.length) {
-            html += highlight(STEPS[idx].typed)
-              + '<span class="ghost">' + esc(STEPS[idx].ghost) + '</span><span class="caret"></span>';
+          if (up === "HELP") {
+            out.insertAdjacentHTML("beforeend",
+              '<div class="dim">Commands: SELECT ... FROM ... [WHERE ...] &middot; TABLES &middot; HELP &middot; CLEAR<br>' +
+              "Tip: press Tab to autocomplete table and column names.</div><div class=\"rows-note\"></div>");
+            scrollDown();
+            return;
+          }
+          if (up === "CLEAR") { out.innerHTML = ""; scrollDown(); return; }
+
+          var m = q.match(/^SELECT\s+(.+?)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+))?$/i);
+          if (!m) {
+            out.insertAdjacentHTML("beforeend",
+              '<div class="dim">Hmm, I only speak simple SELECTs so far. Try: SELECT * FROM experience;</div>');
+            scrollDown();
+            return;
+          }
+          var table = DB[m[2].toLowerCase()];
+          if (!table) {
+            var guess = Object.keys(DB).filter(function (t) { return t.indexOf(m[2].toLowerCase().slice(0, 3)) === 0; })[0];
+            out.insertAdjacentHTML("beforeend",
+              '<div class="dim">No table named \u2018' + esc(m[2]) + "\u2019." +
+              (guess ? " Did you mean <b>" + esc(guess) + "</b>?" : " Try TABLES to see what\u2019s here.") + "</div>");
+            scrollDown();
+            return;
+          }
+
+          var cols;
+          if (m[1].trim() === "*") {
+            cols = table.columns.slice();
           } else {
-            html += '<span class="editor-done">' + esc(DONE_LINE) + '</span><span class="caret"></span>';
+            cols = m[1].split(",").map(function (c) { return c.trim().toLowerCase(); });
+            var bad = cols.filter(function (c) { return table.columns.indexOf(c) === -1; });
+            if (bad.length) {
+              out.insertAdjacentHTML("beforeend",
+                '<div class="dim">No column \u2018' + esc(bad[0]) + "\u2019 in " + esc(m[2].toLowerCase()) +
+                ". Columns: " + esc(table.columns.join(", ")) + "</div>");
+              scrollDown();
+              return;
+            }
           }
-          code.innerHTML = html;
-          hint.innerHTML = idx < STEPS.length
-            ? "<kbd>Tab</kbd> to autocomplete"
-            : 'Query complete &mdash; <kbd>R</kbd> to replay';
-        }
-        function accept() {
-          if (idx >= STEPS.length || typing) return;
-          typing = true;
-          var step = STEPS[idx];
-          var n = 0;
-          var iv = setInterval(function () {
-            n = Math.min(step.ghost.length, n + 4);
-            var html = "";
-            for (var i = 0; i < idx; i++) {
-              html += highlight(STEPS[i].typed + STEPS[i].ghost) + "\n";
-            }
-            html += highlight(step.typed + step.ghost.slice(0, n))
-              + '<span class="ghost">' + esc(step.ghost.slice(n)) + '</span><span class="caret"></span>';
-            code.innerHTML = html;
-            if (n >= step.ghost.length) {
-              clearInterval(iv);
-              idx++;
-              typing = false;
-              render();
-            }
-          }, 18);
-        }
-        function reset() { idx = 0; typing = false; render(); }
 
-        editor.addEventListener("keydown", function (e) {
-          if (e.key === "Tab") { e.preventDefault(); accept(); }
-          else if (e.key === "r" || e.key === "R") { reset(); }
+          var rows = table.rows.slice();
+          if (m[3]) {
+            var w = m[3].match(/^(\w+)\s*(=|LIKE)\s*'(.*)'$/i);
+            if (!w || table.columns.indexOf(w[1].toLowerCase()) === -1) {
+              out.insertAdjacentHTML("beforeend",
+                '<div class="dim">I only understand WHERE column = \u2018value\u2019 or WHERE column LIKE \u2018%value%\u2019.</div>');
+              scrollDown();
+              return;
+            }
+            var ci = table.columns.indexOf(w[1].toLowerCase());
+            var val = w[3].toLowerCase();
+            rows = rows.filter(function (r) {
+              var cell = String(r[ci]).toLowerCase();
+              return w[2].toUpperCase() === "LIKE" ? cell.indexOf(val.replace(/%/g, "")) !== -1 : cell === val;
+            });
+          }
+
+          var idxs = cols.map(function (c) { return table.columns.indexOf(c); });
+          var projected = rows.map(function (r) { return idxs.map(function (i) { return r[i]; }); });
+
+          if (projected.length === 0) {
+            out.insertAdjacentHTML("beforeend", '<div class="dim">0 rows \u2014 no matches.</div>');
+            scrollDown();
+            return;
+          }
+          if (cols.length === 1 && cols[0] === "answer") {
+            renderAnswer(projected);
+          } else {
+            renderTable(cols, projected);
+          }
+          scrollDown();
+        }
+
+        function autocomplete() {
+          var pos = input.selectionStart || input.value.length;
+          var before = input.value.slice(0, pos);
+          var m = before.match(/(\w+)$/);
+          if (!m) return;
+          var frag = m[1];
+          var matches = WORDS.filter(function (w) {
+            return w.toLowerCase().indexOf(frag.toLowerCase()) === 0 && w.toLowerCase() !== frag.toLowerCase();
+          });
+          if (!matches.length) return;
+          var completion = matches[0];
+          for (var i = 1; i < matches.length; i++) {
+            var j = 0;
+            while (j < completion.length && j < matches[i].length &&
+                   completion[j].toLowerCase() === matches[i][j].toLowerCase()) j++;
+            completion = completion.slice(0, j);
+          }
+          input.value = before.slice(0, before.length - frag.length) + completion + input.value.slice(pos);
+          var np = before.length - frag.length + completion.length;
+          input.setSelectionRange(np, np);
+        }
+
+        input.addEventListener("keydown", function (e) {
+          if (e.key === "Tab") { e.preventDefault(); autocomplete(); }
+          else if (e.key === "Enter") { runQuery(input.value); input.value = ""; }
         });
-        editor.addEventListener("click", function () {
-          editor.focus({ preventScroll: true });
-          accept();
+        document.querySelectorAll(".sample-q").forEach(function (btn) {
+          btn.addEventListener("click", function () { runQuery(btn.getAttribute("data-sql")); });
         });
 
-        render();
+        out.insertAdjacentHTML("beforeend",
+          '<div class="dim">cynthia_resume.db \u2014 2 tables. Type TABLES to explore, or run a sample above.</div>');
       })();
     </script>
   </body>
