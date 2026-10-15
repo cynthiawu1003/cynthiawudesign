@@ -378,6 +378,24 @@
         padding: 0 0.35em;
         font-size: 11.5px;
       }
+      @keyframes row-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+      .result-table tbody tr { animation: row-in 320ms ease both; }
+      .answer-card { animation: row-in 320ms ease both; }
+      .exec-indicator { color: rgba(237, 236, 236, 0.45); margin: 0.2rem 0 0.6rem; }
+      .exec-indicator .dots::after { content: ""; animation: dots 1s steps(1) infinite; }
+      @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+      .sound-toggle {
+        margin-left: auto;
+        background: transparent;
+        border: none;
+        color: rgba(237, 236, 236, 0.45);
+        cursor: pointer;
+        font-size: 14px;
+        padding: 0.2rem 0.3rem;
+        line-height: 1;
+      }
+      .sound-toggle:hover { color: #edecec; }
+      #editor-input:disabled { color: #edecec; opacity: 1; }
     </style>
   </head>
   <body>
@@ -412,6 +430,7 @@
           <div class="editor-bar">
             <span class="ed-dot"></span><span class="ed-dot"></span><span class="ed-dot"></span>
             <span class="editor-title">cynthia_resume.db</span>
+            <button type="button" class="sound-toggle" id="sound-toggle" aria-label="Mute sound effects">&#x1F50A;</button>
           </div>
           <div class="editor-output" id="editor-output" aria-live="polite"></div>
           <div class="editor-inputrow">
@@ -567,6 +586,40 @@
           DB[t].columns.forEach(function (c) { WORDS.push(c); });
         });
 
+        // --- tiny WebAudio sound effects (no audio files needed) ---
+        var soundOn = true;
+        var audioCtx = null;
+        var animating = false;
+        function ac() {
+          if (!audioCtx) {
+            try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+            catch (e) { return null; }
+          }
+          if (audioCtx.state === "suspended") audioCtx.resume();
+          return audioCtx;
+        }
+        function tone(freq, dur, type, gain, delay) {
+          if (!soundOn) return;
+          var ctx = ac();
+          if (!ctx) return;
+          var t = ctx.currentTime + (delay || 0);
+          var o = ctx.createOscillator();
+          var g = ctx.createGain();
+          o.type = type || "sine";
+          o.frequency.value = freq;
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(gain || 0.06, t + 0.012);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+          o.connect(g);
+          g.connect(ctx.destination);
+          o.start(t);
+          o.stop(t + dur + 0.05);
+        }
+        function keyClick() { tone(1500 + Math.random() * 1000, 0.03, "square", 0.022); }
+        function queryTick() { tone(520, 0.1, "sine", 0.05); tone(660, 0.1, "sine", 0.05, 0.12); }
+        function successChime() { tone(880, 0.09, "sine", 0.06); tone(1318.5, 0.14, "sine", 0.06, 0.09); }
+        function errorTone() { tone(196, 0.16, "sine", 0.05); }
+
         function esc(str) {
           return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
@@ -585,14 +638,15 @@
           var html = '<table class="result-table"><thead><tr>';
           cols.forEach(function (c) { html += "<th>" + esc(c) + "</th>"; });
           html += "</tr></thead><tbody>";
-          rows.forEach(function (r) {
-            html += "<tr>";
+          rows.forEach(function (r, ri) {
+            html += '<tr style="animation-delay:' + (ri * 80) + 'ms">';
             r.forEach(function (cell) { html += "<td>" + esc(cell) + "</td>"; });
             html += "</tr>";
           });
           html += "</tbody></table>";
           out.insertAdjacentHTML("beforeend", html);
           rowsNote(rows.length);
+          successChime();
         }
         function renderAnswer(rows) {
           rows.forEach(function (r) {
@@ -600,12 +654,17 @@
               '<div class="answer-card">' + esc(r[r.length - 1]) + "</div>");
           });
           rowsNote(rows.length);
+          successChime();
         }
 
         function runQuery(raw) {
           var q = raw.trim().replace(/;+$/, "");
           if (!q) return;
           echo(raw.trim());
+          runQueryBody(q);
+        }
+
+        function runQueryBody(q) {
           var up = q.toUpperCase();
 
           if (up === "TABLES") {
@@ -626,6 +685,7 @@
           if (!m) {
             out.insertAdjacentHTML("beforeend",
               '<div class="dim">Hmm, I only speak simple SELECTs so far. Try: SELECT * FROM experience;</div>');
+            errorTone();
             scrollDown();
             return;
           }
@@ -635,6 +695,7 @@
             out.insertAdjacentHTML("beforeend",
               '<div class="dim">No table named \u2018' + esc(m[2]) + "\u2019." +
               (guess ? " Did you mean <b>" + esc(guess) + "</b>?" : " Try TABLES to see what\u2019s here.") + "</div>");
+            errorTone();
             scrollDown();
             return;
           }
@@ -649,6 +710,7 @@
               out.insertAdjacentHTML("beforeend",
                 '<div class="dim">No column \u2018' + esc(bad[0]) + "\u2019 in " + esc(m[2].toLowerCase()) +
                 ". Columns: " + esc(table.columns.join(", ")) + "</div>");
+            errorTone();
               scrollDown();
               return;
             }
@@ -660,6 +722,7 @@
             if (!w || table.columns.indexOf(w[1].toLowerCase()) === -1) {
               out.insertAdjacentHTML("beforeend",
                 '<div class="dim">I only understand WHERE column = \u2018value\u2019 or WHERE column LIKE \u2018%value%\u2019.</div>');
+            errorTone();
               scrollDown();
               return;
             }
@@ -676,6 +739,7 @@
 
           if (projected.length === 0) {
             out.insertAdjacentHTML("beforeend", '<div class="dim">0 rows \u2014 no matches.</div>');
+            errorTone();
             scrollDown();
             return;
           }
@@ -713,8 +777,50 @@
           if (e.key === "Tab") { e.preventDefault(); autocomplete(); }
           else if (e.key === "Enter") { runQuery(input.value); input.value = ""; }
         });
+        function playQuery(sql) {
+          if (animating) return;
+          animating = true;
+          input.disabled = true;
+          input.value = "";
+          input.focus({ preventScroll: true });
+          var i = 0;
+          var iv = setInterval(function () {
+            i++;
+            input.value = sql.slice(0, i);
+            keyClick();
+            if (i >= sql.length) {
+              clearInterval(iv);
+              setTimeout(function () {
+                echo(sql);
+                var ind = document.createElement("div");
+                ind.className = "exec-indicator";
+                ind.innerHTML = 'executing<span class="dots"></span>';
+                out.appendChild(ind);
+                scrollDown();
+                queryTick();
+                setTimeout(function () {
+                  ind.remove();
+                  runQueryBody(sql.replace(/;+$/, ""));
+                  input.value = "";
+                  input.disabled = false;
+                  animating = false;
+                }, 750);
+              }, 400);
+            }
+          }, 26);
+        }
+
         document.querySelectorAll(".sample-q").forEach(function (btn) {
-          btn.addEventListener("click", function () { runQuery(btn.getAttribute("data-sql")); });
+          btn.addEventListener("click", function () { playQuery(btn.getAttribute("data-sql")); });
+        });
+
+        var sndBtn = document.getElementById("sound-toggle");
+        if (sndBtn) sndBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          soundOn = !soundOn;
+          sndBtn.innerHTML = soundOn ? "&#x1F50A;" : "&#x1F507;";
+          sndBtn.setAttribute("aria-label", soundOn ? "Mute sound effects" : "Unmute sound effects");
+          if (soundOn) successChime();
         });
 
         out.insertAdjacentHTML("beforeend",
