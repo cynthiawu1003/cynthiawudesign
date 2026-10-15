@@ -266,90 +266,136 @@
       footer .mono { font-size: 11px; }
 
 
-      /* ---------- interactive SQL console ---------- */
+      /* ---------- interactive SQL console (chat-style, light-first) ---------- */
       .demo { margin-top: 3.5rem; }
       .demo-caption { color: var(--ink-soft); margin: 0 0 1rem; }
-      .sample-qs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 1rem; }
-      .sample-q {
-        font-family: inherit;
-        font-size: 14px;
-        padding: 0.45rem 0.95rem;
-        border-radius: 999px;
-        border: 1px solid var(--ink-faint);
-        background: transparent;
-        color: var(--ink);
-        cursor: pointer;
-        transition: border-color 200ms, color 200ms;
-      }
-      .sample-q:hover { border-color: var(--accent); color: var(--accent); }
       .editor {
-        background: #14120b;
-        border: 1px solid rgba(237, 236, 236, 0.12);
+        --ed-bg: #f2f1ed;
+        --ed-text: #26251e;
+        --ed-muted: rgba(38, 37, 30, 0.5);
+        --ed-faint-line: rgba(38, 37, 30, 0.1);
+        --ed-faint-row: rgba(38, 37, 30, 0.07);
+        --ed-accent: #f54e00;
+        --ed-bubble: rgba(245, 78, 0, 0.08);
+        --ed-bubble-line: rgba(245, 78, 0, 0.28);
+        background: var(--ed-bg);
+        border: 1px solid var(--ed-faint-line);
         border-radius: 14px;
         overflow: hidden;
         outline: none;
+        color: var(--ed-text);
+      }
+      @media (prefers-color-scheme: dark) {
+        .editor {
+          --ed-bg: #14120b;
+          --ed-text: #edecec;
+          --ed-muted: rgba(237, 236, 236, 0.45);
+          --ed-faint-line: rgba(237, 236, 236, 0.12);
+          --ed-faint-row: rgba(237, 236, 236, 0.07);
+          --ed-accent: #f54e00;
+          --ed-bubble: rgba(245, 78, 0, 0.12);
+          --ed-bubble-line: rgba(245, 78, 0, 0.3);
+        }
       }
       .editor-bar {
         display: flex;
         align-items: center;
         gap: 6px;
         padding: 0.7rem 1rem;
-        border-bottom: 1px solid rgba(237, 236, 236, 0.1);
+        border-bottom: 1px solid var(--ed-faint-line);
       }
       .ed-dot {
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: rgba(237, 236, 236, 0.18);
+        background: var(--ed-muted);
+        opacity: 0.35;
       }
       .editor-title {
         margin-left: 0.4rem;
-        color: rgba(237, 236, 236, 0.45);
+        color: var(--ed-muted);
         font-size: 12.5px;
       }
-      .editor-output {
-        padding: 1rem 1.2rem 0;
+      .sound-toggle {
+        margin-left: auto;
+        background: transparent;
+        border: none;
+        color: var(--ed-muted);
+        cursor: pointer;
+        font-size: 14px;
+        padding: 0.2rem 0.3rem;
+        line-height: 1;
+      }
+      .sound-toggle:hover { color: var(--ed-text); }
+      .chat-thread {
+        padding: 1rem 1.2rem 0.2rem;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 13.5px;
         line-height: 1.7;
-        color: #edecec;
-        max-height: 360px;
+        max-height: 380px;
         overflow-y: auto;
-        min-height: 120px;
+        min-height: 140px;
       }
-      .editor-output .q { color: #ff8a3d; margin: 0.8rem 0 0.2rem; word-break: break-word; }
-      .editor-output .q:first-child { margin-top: 0; }
-      .editor-output .dim { color: rgba(237, 236, 236, 0.45); }
+      .msg { margin: 0 0 0.9rem; }
+      .msg-user { display: flex; justify-content: flex-end; }
+      .msg-user .bubble {
+        background: var(--ed-bubble);
+        border: 1px solid var(--ed-bubble-line);
+        border-radius: 12px 12px 4px 12px;
+        padding: 0.4rem 0.8rem;
+        max-width: 92%;
+        word-break: break-word;
+      }
+      .msg-ai .dim { color: var(--ed-muted); }
+      .suggest-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.7rem; }
+      .suggest {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12.5px;
+        padding: 0.4rem 0.85rem;
+        border-radius: 999px;
+        border: 1px solid var(--ed-bubble-line);
+        background: var(--ed-bubble);
+        color: var(--ed-text);
+        cursor: pointer;
+        transition: border-color 200ms;
+      }
+      .suggest:hover { border-color: var(--ed-accent); }
       .result-table { border-collapse: collapse; margin: 0.3rem 0 0.2rem; max-width: 100%; }
       .result-table th {
         text-align: left;
         font-weight: 400;
-        color: rgba(237, 236, 236, 0.45);
-        border-bottom: 1px solid rgba(237, 236, 236, 0.18);
+        color: var(--ed-muted);
+        border-bottom: 1px solid var(--ed-faint-line);
         padding: 0.25rem 0.9rem 0.25rem 0;
         white-space: nowrap;
       }
       .result-table td {
-        border-bottom: 1px solid rgba(237, 236, 236, 0.07);
+        border-bottom: 1px solid var(--ed-faint-row);
         padding: 0.35rem 0.9rem 0.35rem 0;
         vertical-align: top;
       }
-      .rows-note { color: rgba(237, 236, 236, 0.4); font-size: 12.5px; margin: 0.3rem 0 0.6rem; }
+      .result-table tbody tr { animation: row-in 320ms ease both; }
+      @keyframes row-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+      .rows-note { color: var(--ed-muted); font-size: 12.5px; margin: 0.3rem 0 0; }
       .answer-card {
-        border-left: 2px solid #f54e00;
+        border-left: 2px solid var(--ed-accent);
         padding: 0.1rem 0 0.1rem 0.9rem;
         margin: 0.4rem 0 0.2rem;
-        color: #edecec;
         max-width: 60ch;
+        animation: row-in 320ms ease both;
       }
+      .exec-indicator { color: var(--ed-muted); margin: 0.2rem 0; }
+      .exec-indicator .dots::after { content: ""; animation: dots 1s steps(1) infinite; }
+      @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
       .editor-inputrow {
         display: flex;
         align-items: center;
         gap: 0.6rem;
         padding: 0.9rem 1.2rem 0.3rem;
+        border-top: 1px solid var(--ed-faint-line);
       }
       .prompt {
-        color: #f54e00;
+        color: var(--ed-accent);
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 13.5px;
         white-space: nowrap;
@@ -360,42 +406,26 @@
         background: transparent;
         border: none;
         outline: none;
-        color: #edecec;
+        color: var(--ed-text);
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 13.5px;
-        caret-color: #f54e00;
+        caret-color: var(--ed-accent);
       }
+      #editor-input:disabled { color: var(--ed-text); opacity: 1; }
+      #editor-input::placeholder { color: var(--ed-muted); opacity: 0.7; }
       .editor-hint {
         margin: 0;
         padding: 0.3rem 1.2rem 1.1rem;
-        color: rgba(237, 236, 236, 0.4);
+        color: var(--ed-muted);
         font-size: 12.5px;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       }
       .editor-hint kbd {
-        border: 1px solid rgba(237, 236, 236, 0.35);
+        border: 1px solid var(--ed-faint-line);
         border-radius: 4px;
         padding: 0 0.35em;
         font-size: 11.5px;
       }
-      @keyframes row-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
-      .result-table tbody tr { animation: row-in 320ms ease both; }
-      .answer-card { animation: row-in 320ms ease both; }
-      .exec-indicator { color: rgba(237, 236, 236, 0.45); margin: 0.2rem 0 0.6rem; }
-      .exec-indicator .dots::after { content: ""; animation: dots 1s steps(1) infinite; }
-      @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
-      .sound-toggle {
-        margin-left: auto;
-        background: transparent;
-        border: none;
-        color: rgba(237, 236, 236, 0.45);
-        cursor: pointer;
-        font-size: 14px;
-        padding: 0.2rem 0.3rem;
-        line-height: 1;
-      }
-      .sound-toggle:hover { color: #edecec; }
-      #editor-input:disabled { color: #edecec; opacity: 1; }
     </style>
   </head>
   <body>
@@ -421,22 +451,18 @@
 
       <!-- Interactive SQL resume console -->
       <section class="demo">
-        <p class="demo-caption">Don&apos;t take my word for it &mdash; query my resume like a database. Try one:</p>
-        <div class="sample-qs">
-          <button type="button" class="sample-q" data-sql="SELECT role, company, location, dates FROM experience;">Walk me through your background</button>
-          <button type="button" class="sample-q" data-sql="SELECT answer FROM interview_qa WHERE topic = 'data_in_design';">How do you use data in design?</button>
-        </div>
+        <p class="demo-caption">Don&apos;t take my word for it &mdash; ask the database.</p>
         <div class="editor" id="editor">
           <div class="editor-bar">
             <span class="ed-dot"></span><span class="ed-dot"></span><span class="ed-dot"></span>
             <span class="editor-title">cynthia_resume.db</span>
             <button type="button" class="sound-toggle" id="sound-toggle" aria-label="Mute sound effects">&#x1F50A;</button>
           </div>
-          <div class="editor-output" id="editor-output" aria-live="polite"></div>
+          <div class="chat-thread" id="editor-output" aria-live="polite"></div>
           <div class="editor-inputrow">
             <span class="prompt">cynthia=#</span>
             <input id="editor-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
-              aria-label="SQL query input" placeholder="SELECT * FROM experience;" />
+              aria-label="SQL query input" placeholder="Ask about my career in SQL..." />
           </div>
           <p class="editor-hint"><kbd>Tab</kbd> autocompletes &middot; <kbd>Enter</kbd> runs &middot; try TABLES or HELP</p>
         </div>
@@ -552,7 +578,7 @@
 
       })();
 
-      // Interactive SQL resume console
+      // Interactive SQL resume console (chat-style)
       (function () {
         var out = document.getElementById("editor-output");
         var input = document.getElementById("editor-input");
@@ -625,14 +651,16 @@
         }
         function scrollDown() { out.scrollTop = out.scrollHeight; }
 
+        function ai(html) {
+          out.insertAdjacentHTML("beforeend", '<div class="msg msg-ai">' + html + "</div>");
+        }
         function echo(q) {
           out.insertAdjacentHTML("beforeend",
-            '<div class="q"><span class="prompt">cynthia=#</span> ' + esc(q) + "</div>");
+            '<div class="msg msg-user"><div class="bubble">' + esc(q) + "</div></div>");
         }
-        function rowsNote(n) {
+        function noteHtml(n) {
           var ms = 2 + Math.floor(Math.random() * 8);
-          out.insertAdjacentHTML("beforeend",
-            '<div class="rows-note">' + n + (n === 1 ? " row" : " rows") + " in " + ms + "ms</div>");
+          return '<div class="rows-note">' + n + (n === 1 ? " row" : " rows") + " in " + ms + "ms</div>";
         }
         function renderTable(cols, rows) {
           var html = '<table class="result-table"><thead><tr>';
@@ -644,18 +672,18 @@
             html += "</tr>";
           });
           html += "</tbody></table>";
-          out.insertAdjacentHTML("beforeend", html);
-          rowsNote(rows.length);
+          ai(html + noteHtml(rows.length));
           successChime();
         }
         function renderAnswer(rows) {
+          var html = "";
           rows.forEach(function (r) {
-            out.insertAdjacentHTML("beforeend",
-              '<div class="answer-card">' + esc(r[r.length - 1]) + "</div>");
+            html += '<div class="answer-card">' + esc(r[r.length - 1]) + "</div>";
           });
-          rowsNote(rows.length);
+          ai(html + noteHtml(rows.length));
           successChime();
         }
+        function say(html) { ai('<div class="dim">' + html + "</div>"); }
 
         function runQuery(raw) {
           var q = raw.trim().replace(/;+$/, "");
@@ -673,18 +701,16 @@
             return;
           }
           if (up === "HELP") {
-            out.insertAdjacentHTML("beforeend",
-              '<div class="dim">Commands: SELECT ... FROM ... [WHERE ...] &middot; TABLES &middot; HELP &middot; CLEAR<br>' +
-              "Tip: press Tab to autocomplete table and column names.</div><div class=\"rows-note\"></div>");
+            say("Commands: SELECT ... FROM ... [WHERE ...] &middot; TABLES &middot; HELP &middot; CLEAR<br>" +
+              "Tip: press Tab to autocomplete table and column names.");
             scrollDown();
             return;
           }
-          if (up === "CLEAR") { out.innerHTML = ""; scrollDown(); return; }
+          if (up === "CLEAR") { out.innerHTML = ""; welcome(); scrollDown(); return; }
 
           var m = q.match(/^SELECT\s+(.+?)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+))?$/i);
           if (!m) {
-            out.insertAdjacentHTML("beforeend",
-              '<div class="dim">Hmm, I only speak simple SELECTs so far. Try: SELECT * FROM experience;</div>');
+            say("Hmm, I only speak simple SELECTs so far. Try: SELECT * FROM experience;");
             errorTone();
             scrollDown();
             return;
@@ -692,9 +718,8 @@
           var table = DB[m[2].toLowerCase()];
           if (!table) {
             var guess = Object.keys(DB).filter(function (t) { return t.indexOf(m[2].toLowerCase().slice(0, 3)) === 0; })[0];
-            out.insertAdjacentHTML("beforeend",
-              '<div class="dim">No table named \u2018' + esc(m[2]) + "\u2019." +
-              (guess ? " Did you mean <b>" + esc(guess) + "</b>?" : " Try TABLES to see what\u2019s here.") + "</div>");
+            say("No table named \u2018" + esc(m[2]) + "\u2019." +
+              (guess ? " Did you mean <b>" + esc(guess) + "</b>?" : " Try TABLES to see what\u2019s here."));
             errorTone();
             scrollDown();
             return;
@@ -707,10 +732,9 @@
             cols = m[1].split(",").map(function (c) { return c.trim().toLowerCase(); });
             var bad = cols.filter(function (c) { return table.columns.indexOf(c) === -1; });
             if (bad.length) {
-              out.insertAdjacentHTML("beforeend",
-                '<div class="dim">No column \u2018' + esc(bad[0]) + "\u2019 in " + esc(m[2].toLowerCase()) +
-                ". Columns: " + esc(table.columns.join(", ")) + "</div>");
-            errorTone();
+              say("No column \u2018" + esc(bad[0]) + "\u2019 in " + esc(m[2].toLowerCase()) +
+                ". Columns: " + esc(table.columns.join(", ")));
+              errorTone();
               scrollDown();
               return;
             }
@@ -720,9 +744,8 @@
           if (m[3]) {
             var w = m[3].match(/^(\w+)\s*(=|LIKE)\s*'(.*)'$/i);
             if (!w || table.columns.indexOf(w[1].toLowerCase()) === -1) {
-              out.insertAdjacentHTML("beforeend",
-                '<div class="dim">I only understand WHERE column = \u2018value\u2019 or WHERE column LIKE \u2018%value%\u2019.</div>');
-            errorTone();
+              say("I only understand WHERE column = \u2018value\u2019 or WHERE column LIKE \u2018%value%\u2019.");
+              errorTone();
               scrollDown();
               return;
             }
@@ -738,7 +761,7 @@
           var projected = rows.map(function (r) { return idxs.map(function (i) { return r[i]; }); });
 
           if (projected.length === 0) {
-            out.insertAdjacentHTML("beforeend", '<div class="dim">0 rows \u2014 no matches.</div>');
+            say("0 rows \u2014 no matches.");
             errorTone();
             scrollDown();
             return;
@@ -773,10 +796,6 @@
           input.setSelectionRange(np, np);
         }
 
-        input.addEventListener("keydown", function (e) {
-          if (e.key === "Tab") { e.preventDefault(); autocomplete(); }
-          else if (e.key === "Enter") { runQuery(input.value); input.value = ""; }
-        });
         function playQuery(sql) {
           if (animating) return;
           animating = true;
@@ -793,8 +812,8 @@
               setTimeout(function () {
                 echo(sql);
                 var ind = document.createElement("div");
-                ind.className = "exec-indicator";
-                ind.innerHTML = 'executing<span class="dots"></span>';
+                ind.className = "msg msg-ai";
+                ind.innerHTML = '<div class="exec-indicator">executing<span class="dots"></span></div>';
                 out.appendChild(ind);
                 scrollDown();
                 queryTick();
@@ -810,8 +829,26 @@
           }, 26);
         }
 
-        document.querySelectorAll(".sample-q").forEach(function (btn) {
-          btn.addEventListener("click", function () { playQuery(btn.getAttribute("data-sql")); });
+        function wireSuggests(scope) {
+          (scope || document).querySelectorAll(".suggest").forEach(function (btn) {
+            if (btn.dataset.wired) return;
+            btn.dataset.wired = "1";
+            btn.addEventListener("click", function () { playQuery(btn.getAttribute("data-sql")); });
+          });
+        }
+
+        function welcome() {
+          ai("Ask me anything about Cynthia\u2019s career \u2014 or start with one of these:" +
+            '<div class="suggest-row">' +
+            '<button type="button" class="suggest" data-sql="SELECT role, company, location, dates FROM experience;">Walk me through your background</button>' +
+            '<button type="button" class="suggest" data-sql="SELECT answer FROM interview_qa WHERE topic = \'data_in_design\';">How do you use data in design?</button>' +
+            "</div>");
+          wireSuggests(out);
+        }
+
+        input.addEventListener("keydown", function (e) {
+          if (e.key === "Tab") { e.preventDefault(); autocomplete(); }
+          else if (e.key === "Enter") { runQuery(input.value); input.value = ""; }
         });
 
         var sndBtn = document.getElementById("sound-toggle");
@@ -823,8 +860,7 @@
           if (soundOn) successChime();
         });
 
-        out.insertAdjacentHTML("beforeend",
-          '<div class="dim">cynthia_resume.db \u2014 2 tables. Type TABLES to explore, or run a sample above.</div>');
+        welcome();
       })();
     </script>
   </body>
