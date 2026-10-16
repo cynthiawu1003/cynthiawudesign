@@ -266,19 +266,9 @@
       footer .mono { font-size: 11px; }
 
 
-      /* ---------- interactive SQL console : split view (light-first) ---------- */
+      /* ---------- interactive SQL console : unified split view ---------- */
       .demo { margin-top: 3.5rem; }
       .demo-caption { color: var(--ink-soft); margin: 0 0 1rem; }
-      .split {
-        display: grid;
-        grid-template-columns: 1.05fr 1fr;
-        gap: 1rem;
-        align-items: stretch;
-      }
-      @media (max-width: 720px) {
-        .split { grid-template-columns: 1fr; }
-        .chat-panel { order: -1; }
-      }
       .editor {
         --ed-bg: #f2f1ed;
         --ed-text: #26251e;
@@ -344,15 +334,43 @@
         line-height: 1;
       }
       .sound-toggle:hover { color: var(--ed-text); }
+      /* unified body: SQL pane | divider | chat pane */
+      .console-body {
+        display: grid;
+        grid-template-columns: 1.08fr 1px 1fr;
+        flex: 1;
+        min-height: 0;
+      }
+      .sql-pane, .chat-pane {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+      }
+      .console-divider { background: var(--ed-faint-line); }
+      .pane-tag {
+        padding: 0.6rem 1.2rem 0;
+        color: var(--ed-muted);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        flex: none;
+      }
+      @media (max-width: 720px) {
+        .console-body { grid-template-columns: 1fr; }
+        .console-divider { width: auto; height: 1px; }
+        .chat-pane { order: -1; }
+      }
       /* left: SQL stage */
       .sql-stage {
-        padding: 1rem 1.2rem 1.1rem;
+        padding: 0.6rem 1.2rem 1.1rem;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 13.5px;
         line-height: 1.7;
         flex: 1;
         min-height: 300px;
-        max-height: 420px;
+        max-height: 440px;
         overflow-y: auto;
       }
       .sql-queryline { display: flex; gap: 0.6rem; align-items: baseline; margin-bottom: 0.6rem; }
@@ -368,15 +386,25 @@
         animation: caret-blink 1.1s steps(2, start) infinite;
       }
       @keyframes caret-blink { 50% { opacity: 0; } }
+      /* SQL-style text table, like a notebook cell output */
+      .sql-table {
+        margin: 0.3rem 0 0.2rem;
+        font-family: inherit;
+        font-size: 13px;
+        line-height: 1.7;
+        overflow-x: auto;
+      }
+      .sql-table .trow { display: block; animation: row-in 320ms ease both; }
+      @keyframes row-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
       /* right: chat */
       .chat-thread {
-        padding: 1rem 1.2rem 0.2rem;
+        padding: 0.6rem 1.2rem 0.2rem;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 13.5px;
         line-height: 1.7;
         flex: 1;
         min-height: 220px;
-        max-height: 300px;
+        max-height: 320px;
         overflow-y: auto;
       }
       .msg { margin: 0 0 0.9rem; }
@@ -398,32 +426,17 @@
       .suggest {
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 12.5px;
+        text-align: left;
         padding: 0.4rem 0.85rem;
         border-radius: 999px;
-        border: 1px solid var(--ed-bubble-line);
-        background: var(--ed-bubble);
-        color: var(--ed-text);
+        border: 1px solid var(--ed-accent);
+        background: transparent;
+        color: var(--ed-accent);
         cursor: pointer;
-        transition: border-color 200ms;
+        transition: background 200ms;
       }
-      .suggest:hover { border-color: var(--ed-accent); }
-      /* shared result styling */
-      .result-table { border-collapse: collapse; margin: 0.3rem 0 0.2rem; max-width: 100%; }
-      .result-table th {
-        text-align: left;
-        font-weight: 400;
-        color: var(--ed-muted);
-        border-bottom: 1px solid var(--ed-faint-line);
-        padding: 0.25rem 0.9rem 0.25rem 0;
-        white-space: nowrap;
-      }
-      .result-table td {
-        border-bottom: 1px solid var(--ed-faint-row);
-        padding: 0.35rem 0.9rem 0.35rem 0;
-        vertical-align: top;
-      }
-      .result-table tbody tr { animation: row-in 320ms ease both; }
-      @keyframes row-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+      .suggest:hover { background: var(--ed-bubble); }
+      /* shared result bits */
       .rows-note { color: var(--ed-muted); font-size: 12.5px; margin: 0.3rem 0 0; }
       .answer-card {
         border-left: 2px solid var(--ed-accent);
@@ -480,6 +493,7 @@
       .chat-thread div, .chat-thread span,
       .sql-stage div, .sql-stage span, .sql-stage code { font-size: 13.5px; }
       .chat-thread .rows-note, .sql-stage .rows-note { font-size: 12.5px; }
+      .pane-tag { font-size: 11px; }
     </style>
   </head>
   <body>
@@ -503,36 +517,37 @@
       </header>
 
 
-      <!-- Interactive SQL resume console : split view -->
+      <!-- Interactive SQL resume console : unified split view -->
       <section class="demo">
         <p class="demo-caption">Chat on the right &mdash; watch the SQL it runs on the left.</p>
-        <div class="split">
-          <div class="editor sql-panel" id="sql-panel">
-            <div class="editor-bar">
-              <span class="ed-dot"></span><span class="ed-dot"></span><span class="ed-dot"></span>
-              <span class="editor-title">query.sql</span>
-              <button type="button" class="sound-toggle" id="sound-toggle" aria-label="Mute sound effects">&#x1F50A;</button>
-            </div>
-            <div class="sql-stage" id="sql-stage" aria-live="polite">
-              <div class="sql-queryline"><span class="prompt">cynthia=#</span> <code id="sql-query"></code></div>
-              <div id="sql-output"><div class="dim">-- pick a prompt on the right to see the SQL</div></div>
-            </div>
+        <div class="editor console">
+          <div class="editor-bar">
+            <span class="ed-dot"></span><span class="ed-dot"></span><span class="ed-dot"></span>
+            <span class="editor-title">cynthia_resume.db</span>
+            <button type="button" class="sound-toggle" id="sound-toggle" aria-label="Mute sound effects">&#x1F50A;</button>
           </div>
-          <div class="editor chat-panel" id="chat-panel">
-            <div class="editor-bar">
-              <span class="ed-dot"></span><span class="ed-dot"></span><span class="ed-dot"></span>
-              <span class="editor-title">chat</span>
+          <div class="console-body">
+            <div class="sql-pane">
+              <div class="pane-tag">SQL</div>
+              <div class="sql-stage" id="sql-stage" aria-live="polite">
+                <div class="sql-queryline"><span class="prompt">cynthia=#</span> <code id="sql-query"></code></div>
+                <div id="sql-output"><div class="dim">-- pick a prompt on the right to see the SQL</div></div>
+              </div>
             </div>
-            <div class="chat-thread" id="chat-thread" aria-live="polite"></div>
-            <div class="suggest-above">
-              <div class="suggest-row" id="suggest-row"></div>
+            <div class="console-divider" aria-hidden="true"></div>
+            <div class="chat-pane">
+              <div class="pane-tag">Chat</div>
+              <div class="chat-thread" id="chat-thread" aria-live="polite"></div>
+              <div class="suggest-above" id="suggest-above">
+                <div class="suggest-row" id="suggest-row"></div>
+              </div>
+              <div class="editor-inputrow">
+                <span class="prompt">&gt;</span>
+                <input id="chat-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+                  aria-label="Chat input" placeholder="Ask about Cynthia's career..." />
+              </div>
+              <p class="editor-hint"><kbd>Tab</kbd> autocompletes &middot; <kbd>Enter</kbd> sends</p>
             </div>
-            <div class="editor-inputrow">
-              <span class="prompt">&gt;</span>
-              <input id="chat-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
-                aria-label="Chat input" placeholder="Ask about Cynthia's career..." />
-            </div>
-            <p class="editor-hint"><kbd>Tab</kbd> autocompletes &middot; <kbd>Enter</kbd> sends</p>
           </div>
         </div>
       </section>
@@ -647,13 +662,14 @@
 
       })();
 
-      // Interactive SQL resume console : split view (chat right, SQL left)
+      // Interactive SQL resume console : unified split view
       (function () {
         var thread = document.getElementById("chat-thread");
         var sqlQuery = document.getElementById("sql-query");
         var sqlOut = document.getElementById("sql-output");
         var input = document.getElementById("chat-input");
         var suggestRow = document.getElementById("suggest-row");
+        var suggestAbove = document.getElementById("suggest-above");
         if (!thread || !sqlQuery || !sqlOut || !input || !suggestRow) return;
 
         var DB = {
@@ -769,20 +785,32 @@
         }
         function noteHtml(n) {
           var ms = 2 + Math.floor(Math.random() * 8);
-          return { html: '<div class="rows-note">' + n + (n === 1 ? " row" : " rows") + " in " + ms + "ms</div>", ms: ms };
+          return '<div class="rows-note">' + n + (n === 1 ? " row" : " rows") + " in " + ms + "ms</div>";
         }
-        function renderTable(cols, rows) {
-          var html = '<table class="result-table"><thead><tr>';
-          cols.forEach(function (c) { html += "<th>" + esc(c) + "</th>"; });
-          html += "</tr></thead><tbody>";
-          rows.forEach(function (r, ri) {
-            html += '<tr style="animation-delay:' + (ri * 80) + 'ms">';
-            r.forEach(function (cell) { html += "<td>" + esc(cell) + "</td>"; });
-            html += "</tr>";
+
+        // SQL-style text table: monospace, pipe separators, === header rule
+        function renderTextTable(cols, rows) {
+          var widths = cols.map(function (c, i) {
+            var w = String(c).length;
+            rows.forEach(function (r) { w = Math.max(w, String(r[i]).length); });
+            return Math.min(w, 30);
           });
-          html += "</tbody></table>";
-          var note = noteHtml(rows.length);
-          sqlOut.insertAdjacentHTML("beforeend", html + note.html);
+          function pad(s, w) {
+            s = String(s);
+            if (s.length > w) s = s.slice(0, w - 1) + "\u2026";
+            while (s.length < w) s += " ";
+            return s;
+          }
+          function line(cells) {
+            return cells.map(function (c, i) { return pad(c, widths[i]); }).join(" | ");
+          }
+          var html = '<pre class="sql-table">' + esc(line(cols)) + "\n" +
+            esc(widths.map(function (w) { return new Array(w + 1).join("="); }).join(" | ")) + "\n";
+          rows.forEach(function (r, ri) {
+            html += '<span class="trow" style="animation-delay:' + (ri * 80) + 'ms">' + esc(line(r)) + "</span>\n";
+          });
+          html += "</pre>";
+          sqlOut.insertAdjacentHTML("beforeend", html + noteHtml(rows.length));
           successChime();
           scrollStage();
           return rows.length;
@@ -792,8 +820,7 @@
           rows.forEach(function (r) {
             html += '<div class="answer-card">' + esc(r[r.length - 1]) + "</div>";
           });
-          var note = noteHtml(rows.length);
-          sqlOut.insertAdjacentHTML("beforeend", html + note.html);
+          sqlOut.insertAdjacentHTML("beforeend", html + noteHtml(rows.length));
           successChime();
           scrollStage();
           return rows.length;
@@ -803,23 +830,34 @@
           scrollStage();
         }
 
+        function summarize(cols, rows) {
+          if (cols.length === 1 && cols[0] === "answer") return null;
+          var bits = rows.map(function (r) {
+            var cells = r.slice(0, 2).map(function (c) { return String(c); }).filter(Boolean);
+            return cells.join(" \u2014 ");
+          }).filter(Boolean);
+          var s = bits.join("; ");
+          return s.length > 240 ? s.slice(0, 240) + "\u2026" : s;
+        }
+
         function runSQL(q, done) {
           var up = q.toUpperCase();
 
           if (up === "TABLES") {
-            done(renderTable(["table"], Object.keys(DB).map(function (t) { return [t]; })));
+            var n0 = renderTextTable(["table"], Object.keys(DB).map(function (t) { return [t]; }));
+            done(n0, summarize(["table"], Object.keys(DB).map(function (t) { return [t]; })));
             return;
           }
           if (up === "HELP") {
             say("Commands: SELECT ... FROM ... [WHERE ...] &middot; TABLES &middot; HELP &middot; CLEAR<br>" +
               "Tip: press Tab to autocomplete table and column names.");
-            done(0);
+            done(0, null);
             return;
           }
           if (up === "CLEAR") {
             sqlQuery.innerHTML = "";
             sqlOut.innerHTML = '<div class="dim">-- pick a prompt on the right to see the SQL</div>';
-            done(0);
+            done(0, null);
             return;
           }
 
@@ -827,7 +865,7 @@
           if (!m) {
             say("Hmm, I only speak simple SELECTs so far. Try: SELECT * FROM experience;");
             errorTone();
-            done(0);
+            done(0, null);
             return;
           }
           var table = DB[m[2].toLowerCase()];
@@ -836,7 +874,7 @@
             say("No table named \u2018" + esc(m[2]) + "\u2019." +
               (guess ? " Did you mean <b>" + esc(guess) + "</b>?" : " Try TABLES to see what\u2019s here."));
             errorTone();
-            done(0);
+            done(0, null);
             return;
           }
 
@@ -850,7 +888,7 @@
               say("No column \u2018" + esc(bad[0]) + "\u2019 in " + esc(m[2].toLowerCase()) +
                 ". Columns: " + esc(table.columns.join(", ")));
               errorTone();
-              done(0);
+              done(0, null);
               return;
             }
           }
@@ -861,7 +899,7 @@
             if (!w || table.columns.indexOf(w[1].toLowerCase()) === -1) {
               say("I only understand WHERE column = \u2018value\u2019 or WHERE column LIKE \u2018%value%\u2019.");
               errorTone();
-              done(0);
+              done(0, null);
               return;
             }
             var ci = table.columns.indexOf(w[1].toLowerCase());
@@ -878,13 +916,14 @@
           if (projected.length === 0) {
             say("0 rows \u2014 no matches.");
             errorTone();
-            done(0);
+            done(0, null);
             return;
           }
+          var summary = summarize(cols, projected);
           if (cols.length === 1 && cols[0] === "answer") {
-            done(renderAnswer(projected));
+            done(renderAnswer(projected), null);
           } else {
-            done(renderTable(cols, projected));
+            done(renderTextTable(cols, projected), summary);
           }
         }
 
@@ -919,8 +958,12 @@
           queryTick();
           setTimeout(function () {
             ind.remove();
-            runSQL(sql, function (n) {
-              if (n > 0) bubbleAI("Found " + n + (n === 1 ? " row" : " rows") + " \u2014 full results on the left.");
+            runSQL(sql, function (n, summary) {
+              if (n > 0) {
+                bubbleAI(summary
+                  ? esc(summary) + ' <span class="dim">(' + n + (n === 1 ? " row" : " rows") + " in the SQL panel)</span>"
+                  : "Full answer in the SQL panel.");
+              }
               scrollThread();
             });
           }, 750);
@@ -928,6 +971,7 @@
 
         function ask(label, sql, animate) {
           if (animating) return;
+          sql = sql.replace(/;+\s*$/, "");
           bubbleUser(label);
           scrollThread();
           sqlOut.innerHTML = "";
@@ -978,7 +1022,10 @@
           btn.type = "button";
           btn.className = "suggest";
           btn.textContent = p.label;
-          btn.addEventListener("click", function () { ask(p.label, p.sql, true); });
+          btn.addEventListener("click", function () {
+            if (suggestAbove) suggestAbove.style.display = "none";
+            ask(p.label, p.sql, true);
+          });
           suggestRow.appendChild(btn);
         });
 
