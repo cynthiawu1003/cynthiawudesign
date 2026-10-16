@@ -134,6 +134,11 @@
       .intro p { color: var(--ink-soft); margin: 0 0 1rem; font-weight: 400; }
       .intro .draft-row { margin-top: 1rem; }
       .intro .draft-row span.note { color: var(--ink-faint); font-weight: 400; }
+      /* intro text colors match cynthiawudesign.com */
+      .intro { --ink: #1c1a17; --ink-soft: #4c4741; }
+      @media (prefers-color-scheme: dark) {
+        .intro { --ink: #ece7dc; --ink-soft: #b7b0a1; }
+      }
 
       /* ---------- contact ---------- */
       .contact p { color: var(--ink-soft); margin: 0 0 1rem; font-weight: 400; }
@@ -363,7 +368,7 @@
       }
       .msg-ai .dim { color: var(--ed-muted); }
       .msg-ai a { color: var(--ed-accent); }
-      .email-fallback { font-size: 12.5px; }
+      .chat-thread span.email-fallback { font-size: 12.5px; }
       /* SQL block inside the chat response */
       .sql-block {
         margin-top: 0.5rem;
@@ -401,9 +406,9 @@
       }
       .sql-grid th {
         background: var(--ed-th-bg);
-        color: var(--ed-text);
+        color: var(--ed-muted);
         text-align: left;
-        font-weight: 600;
+        font-weight: 400;
         padding: 0.45rem 0.7rem;
         white-space: nowrap;
       }
@@ -444,7 +449,8 @@
         transition: background 200ms;
       }
       .suggest:hover { background: var(--ed-bubble); }
-      .suggest .send-ico { margin-right: 0.4em; vertical-align: -1px; }
+      .suggest .send-ico { margin-right: 0.4em; }
+      .suggest .send-ico svg { width: 13px; height: 13px; vertical-align: -2px; }
       .sql-divider { height: 1px; background: var(--ed-faint-line); margin: 0.5rem 0; }
 
       .editor-inputrow {
@@ -700,7 +706,7 @@
         };
 
         var PROMPTS = [
-          { label: "Your experience?",
+          { label: "What is your working experience?",
             sql: "SELECT role, company, location, dates FROM experience;" },
           { label: "What are you working on?",
             sql: "SELECT role, company, highlight FROM experience WHERE dates LIKE '%present%';",
@@ -993,7 +999,7 @@
           var btn = document.createElement("button");
           btn.type = "button";
           btn.className = "suggest";
-          btn.innerHTML = '<svg class="send-ico" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>' + esc(p.label);
+          btn.innerHTML = '<span class="send-ico"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m600-200-56-57 143-143H300q-75 0-127.5-52.5T120-580q0-75 52.5-127.5T300-760h20v80h-20q-42 0-71 29t-29 71q0 42 29 71t71 29h387L544-624l56-56 240 240-240 240Z"/></svg></span>' + esc(p.label);
           btn.addEventListener("click", function () {
             btn.style.display = "none";
             ask(p.label, p.sql, true, p.blurb);
