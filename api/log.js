@@ -33,11 +33,9 @@ module.exports = async function (req, res) {
     res.status(405).json({ ok: false });
     return;
   }
-  var rwToken = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!rwToken) {
-    res.status(503).json({ ok: false, reason: "logger not configured" });
-    return;
-  }
+  // Auth: explicit BLOB_READ_WRITE_TOKEN if present, otherwise the SDK uses
+  // ambient Vercel OIDC credentials (VERCEL_OIDC_TOKEN + BLOB_STORE_ID).
+  var rwToken = process.env.BLOB_READ_WRITE_TOKEN || undefined;
   var ip = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() || "unknown";
   if (rateLimited(ip)) {
     res.status(429).json({ ok: false });
@@ -58,11 +56,11 @@ module.exports = async function (req, res) {
   var now = new Date();
   var day = now.toISOString().slice(0, 10);
   var ts = now.toISOString().slice(11, 19).replace(/:/g, "-");
-  var pathname = "logs/" + day + "/" + ts + "-" + rand(12) + ".json";
+  var pathname = "logs/" + day + "/" + ts + "-" + rand(24) + ".json";
   var event = { type: body.type, data: body.data.slice(0, MAX_DATA), ts: now.toISOString() };
   try {
     await put(pathname, JSON.stringify(event), {
-      access: "private",
+      access: "public",
       contentType: "application/json",
       token: rwToken,
     });
