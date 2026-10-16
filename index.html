@@ -266,7 +266,7 @@
       footer .mono { font-size: 11px; }
 
 
-      /* ---------- interactive SQL console : chat-first, expanding SQL ---------- */
+      /* ---------- interactive SQL console : merged chat ---------- */
       .demo { margin-top: 3.5rem; }
       .demo-caption { color: var(--ink-soft); margin: 0 0 1rem; }
       .editor {
@@ -336,103 +336,14 @@
         line-height: 1;
       }
       .sound-toggle:hover { color: var(--ed-text); }
-      /* body: chat left; SQL pane expands in on the right */
-      .console-body {
-        display: grid;
-        grid-template-columns: 1fr 0px 0fr;
-        transition: grid-template-columns 600ms cubic-bezier(0.22, 1, 0.36, 1);
-        flex: 1;
-        min-height: 0;
-      }
-      .console.expanded .console-body { grid-template-columns: 2fr 1px 3fr; }
-      .chat-pane, .sql-pane {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-        min-height: 0;
-      }
-      .sql-pane { opacity: 0; overflow: hidden; }
-      .console.expanded .sql-pane { opacity: 1; transition: opacity 450ms ease 250ms; }
-      .console-divider { background: var(--ed-faint-line); }
-      .pane-tag {
-        padding: 0.6rem 1.2rem 0;
-        color: var(--ed-muted);
-        font-size: 11px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        flex: none;
-      }
-      @media (max-width: 720px) {
-        .console-body, .console.expanded .console-body { grid-template-columns: 1fr; transition: none; }
-        .sql-pane { display: none; }
-        .console.expanded .sql-pane { display: flex; opacity: 1; }
-        .console-divider { display: none; }
-        .console.expanded .console-divider { display: block; height: 1px; width: auto; }
-      }
-      /* right: SQL pane — query input box on top, output below */
-      .sql-inputbox {
-        display: flex;
-        gap: 0.6rem;
-        align-items: baseline;
-        margin: 0.6rem 1.2rem 0;
-        padding: 0.7rem 0.9rem;
-        border: 1px solid var(--ed-faint-line);
-        border-radius: 10px;
-        background: var(--ed-inset);
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: 13.5px;
-        line-height: 1.7;
-        flex: none;
-        min-height: 3.4em;
-      }
-      #sql-query { word-break: break-word; }
-      #sql-query .kw { color: var(--ed-kw); }
-      #sql-query .str { color: var(--ed-str); }
-      .caret {
-        display: inline-block;
-        width: 8px;
-        height: 1.1em;
-        background: var(--ed-accent);
-        vertical-align: text-bottom;
-        animation: caret-blink 1.1s steps(2, start) infinite;
-      }
-      @keyframes caret-blink { 50% { opacity: 0; } }
-      .sql-hdivider {
-        height: 1px;
-        background: var(--ed-faint-line);
-        margin: 0.9rem 0 0;
-        flex: none;
-      }
-      .sql-output {
-        padding: 0.9rem 1.2rem 1.1rem;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: 13.5px;
-        line-height: 1.7;
-        flex: 1;
-        min-height: 240px;
-        max-height: 380px;
-        overflow-y: auto;
-      }
-      /* SQL-style text table: monospace, pipe separators, === header rule */
-      .sql-table {
-        margin: 0.3rem 0 0.2rem;
-        font-family: inherit;
-        font-size: 13px;
-        line-height: 1.7;
-        overflow-x: auto;
-      }
-      .sql-table .trow { display: block; animation: row-in 320ms ease both; }
-      @keyframes row-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
-      /* left: chat */
       .chat-thread {
-        padding: 0.6rem 1.2rem 0.2rem;
+        padding: 1rem 1.2rem 0.2rem;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 13.5px;
         line-height: 1.7;
         flex: 1;
-        min-height: 240px;
-        max-height: 340px;
+        min-height: 320px;
+        max-height: 480px;
         overflow-y: auto;
       }
       .msg { margin: 0 0 0.9rem; }
@@ -446,8 +357,53 @@
         word-break: break-word;
       }
       .msg-ai .dim { color: var(--ed-muted); }
+      .msg-ai a { color: var(--ed-accent); }
+      /* SQL block inside the chat response */
+      .sql-block {
+        margin-top: 0.5rem;
+        border: 1px solid var(--ed-faint-line);
+        border-radius: 10px;
+        padding: 0.7rem 0.9rem;
+        background: var(--ed-inset);
+      }
+      .sql-queryline { display: flex; gap: 0.6rem; align-items: baseline; margin-bottom: 0.4rem; }
+      .sql-q { word-break: break-word; }
+      .sql-q .kw { color: var(--ed-kw); }
+      .sql-q .str { color: var(--ed-str); }
+      .caret {
+        display: inline-block;
+        width: 8px;
+        height: 1.1em;
+        background: var(--ed-accent);
+        vertical-align: text-bottom;
+        animation: caret-blink 1.1s steps(2, start) infinite;
+      }
+      @keyframes caret-blink { 50% { opacity: 0; } }
+      /* SQL-style text table: monospace, pipe separators, === header rule */
+      .sql-table {
+        margin: 0.4rem 0 0.2rem;
+        font-family: inherit;
+        font-size: 13px;
+        line-height: 1.7;
+        overflow-x: auto;
+      }
+      .sql-table .trow { display: block; animation: row-in 320ms ease both; }
+      @keyframes row-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+      .rows-note { color: var(--ed-muted); font-size: 12.5px; margin: 0.3rem 0 0; }
+      .chat-summary { color: var(--ed-muted); font-size: 12.5px; margin-top: 0.5rem; }
+      .answer-card {
+        border-left: 2px solid var(--ed-accent);
+        padding: 0.1rem 0 0.1rem 0.9rem;
+        margin: 0.4rem 0 0.2rem;
+        max-width: 60ch;
+        animation: row-in 320ms ease both;
+      }
+      .exec-indicator { color: var(--ed-muted); margin: 0.2rem 0; }
+      .exec-indicator .dots::after { content: ""; animation: dots 1s steps(1) infinite; }
+      @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
       .suggest-above {
-        padding: 0.2rem 1.2rem 0;
+        padding: 0.4rem 1.2rem 0;
+        margin-bottom: 1rem;
         flex: none;
       }
       .suggest-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
@@ -464,18 +420,6 @@
         transition: background 200ms;
       }
       .suggest:hover { background: var(--ed-bubble); }
-      /* shared result bits */
-      .rows-note { color: var(--ed-muted); font-size: 12.5px; margin: 0.3rem 0 0; }
-      .answer-card {
-        border-left: 2px solid var(--ed-accent);
-        padding: 0.1rem 0 0.1rem 0.9rem;
-        margin: 0.4rem 0 0.2rem;
-        max-width: 60ch;
-        animation: row-in 320ms ease both;
-      }
-      .exec-indicator { color: var(--ed-muted); margin: 0.2rem 0; }
-      .exec-indicator .dots::after { content: ""; animation: dots 1s steps(1) infinite; }
-      @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
       .editor-inputrow {
         display: flex;
         align-items: center;
@@ -518,9 +462,8 @@
         font-size: 11.5px;
       }
       /* beat the site-wide 17px div/span rule inside the console */
-      .chat-thread div, .chat-thread span,
-      .sql-output div, .sql-output span, .sql-inputbox span, .sql-inputbox code { font-size: 13.5px; }
-      .chat-thread .rows-note, .sql-output .rows-note { font-size: 12.5px; }
+      .chat-thread div, .chat-thread span, .chat-thread code { font-size: 13.5px; }
+      .chat-thread .rows-note, .chat-thread .chat-summary { font-size: 12.5px; }
       .pane-tag { font-size: 11px; }
     </style>
   </head>
@@ -545,7 +488,7 @@
       </header>
 
 
-      <!-- Interactive SQL resume console : chat-first, expanding SQL -->
+      <!-- Interactive SQL resume console : merged chat -->
       <section class="demo">
         <p class="demo-caption">Ask in the chat &mdash; watch it become SQL.</p>
         <div class="editor console" id="console">
@@ -554,28 +497,16 @@
             <span class="editor-title">cynthia_resume.db</span>
             <button type="button" class="sound-toggle" id="sound-toggle" aria-label="Mute sound effects">&#x1F50A;</button>
           </div>
-          <div class="console-body">
-            <div class="chat-pane">
-              <div class="pane-tag">Chat</div>
-              <div class="chat-thread" id="chat-thread" aria-live="polite"></div>
-              <div class="suggest-above" id="suggest-above">
-                <div class="suggest-row" id="suggest-row"></div>
-              </div>
-              <div class="editor-inputrow">
-                <span class="prompt">&gt;</span>
-                <input id="chat-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
-                  aria-label="Chat input" placeholder="Ask about Cynthia's career..." />
-              </div>
-              <p class="editor-hint"><kbd>Tab</kbd> autocompletes &middot; <kbd>Enter</kbd> sends</p>
-            </div>
-            <div class="console-divider" aria-hidden="true"></div>
-            <div class="sql-pane">
-              <div class="pane-tag">SQL</div>
-              <div class="sql-inputbox"><span class="prompt">cynthia=#</span> <code id="sql-query"></code></div>
-              <div class="sql-hdivider" aria-hidden="true"></div>
-              <div class="sql-output" id="sql-output" aria-live="polite"><div class="dim">-- ask something in the chat</div></div>
-            </div>
+          <div class="chat-thread" id="chat-thread" aria-live="polite"></div>
+          <div class="suggest-above" id="suggest-above">
+            <div class="suggest-row" id="suggest-row"></div>
           </div>
+          <div class="editor-inputrow">
+            <span class="prompt">&gt;</span>
+            <input id="chat-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+              aria-label="Chat input" placeholder="Ask about Cynthia's career..." />
+          </div>
+          <p class="editor-hint"><kbd>Tab</kbd> autocompletes &middot; <kbd>Enter</kbd> sends</p>
         </div>
       </section>
 
@@ -689,16 +620,15 @@
 
       })();
 
-      // Interactive SQL resume console : chat-first, expanding SQL panel
+      // Interactive SQL resume console : merged chat (SQL lives inside the response)
       (function () {
-        var consoleEl = document.getElementById("console");
         var thread = document.getElementById("chat-thread");
-        var sqlQuery = document.getElementById("sql-query");
-        var sqlOut = document.getElementById("sql-output");
         var input = document.getElementById("chat-input");
         var suggestRow = document.getElementById("suggest-row");
         var suggestAbove = document.getElementById("suggest-above");
-        if (!consoleEl || !thread || !sqlQuery || !sqlOut || !input || !suggestRow) return;
+        if (!thread || !input || !suggestRow) return;
+
+        var EMAIL = "cynthiawu1003@gmail.com";
 
         var DB = {
           experience: {
@@ -749,7 +679,6 @@
             sql: "SELECT role, company, highlight FROM experience WHERE dates LIKE '%present%';",
             blurb: "Lead Product Designer at Meta in New York \u2014 building GenAI and agentic messaging experiences (Meta AI Award)." }
         ];
-        // extra free-text routes (not shown as suggestions)
         var ROUTES = [
           { test: /tool/, label: "What tools do you use?", sql: "SELECT tool, category FROM tools;" },
           { test: /skill/, label: "What skills do you have?", sql: "SELECT skill, area FROM skills;" }
@@ -806,7 +735,6 @@
           return t;
         }
         function scrollThread() { thread.scrollTop = thread.scrollHeight; }
-        function scrollStage() { sqlOut.scrollTop = sqlOut.scrollHeight; }
 
         function bubbleUser(text) {
           thread.insertAdjacentHTML("beforeend",
@@ -821,7 +749,7 @@
         }
 
         // SQL-style text table: monospace, pipe separators, === header rule
-        function renderTextTable(cols, rows) {
+        function renderTextTable(target, cols, rows) {
           var widths = cols.map(function (c, i) {
             var w = String(c).length;
             rows.forEach(function (r) { w = Math.max(w, String(r[i]).length); });
@@ -842,24 +770,24 @@
             html += '<span class="trow" style="animation-delay:' + (ri * 80) + 'ms">' + esc(line(r)) + "</span>\n";
           });
           html += "</pre>";
-          sqlOut.insertAdjacentHTML("beforeend", html + noteHtml(rows.length));
+          target.insertAdjacentHTML("beforeend", html + noteHtml(rows.length));
           successChime();
-          scrollStage();
+          scrollThread();
           return rows.length;
         }
-        function renderAnswer(rows) {
+        function renderAnswer(target, rows) {
           var html = "";
           rows.forEach(function (r) {
             html += '<div class="answer-card">' + esc(r[r.length - 1]) + "</div>";
           });
-          sqlOut.insertAdjacentHTML("beforeend", html + noteHtml(rows.length));
+          target.insertAdjacentHTML("beforeend", html + noteHtml(rows.length));
           successChime();
-          scrollStage();
+          scrollThread();
           return rows.length;
         }
-        function say(html) {
-          sqlOut.insertAdjacentHTML("beforeend", '<div class="dim">' + html + "</div>");
-          scrollStage();
+        function say(target, html) {
+          target.insertAdjacentHTML("beforeend", '<div class="dim">' + html + "</div>");
+          scrollThread();
         }
 
         function summarize(cols, rows) {
@@ -872,31 +800,31 @@
           return s.length > 240 ? s.slice(0, 240) + "\u2026" : s;
         }
 
-        function runSQL(q, done) {
+        function runSQL(q, target, done) {
           var up = q.toUpperCase();
 
           if (up === "TABLES") {
             var trows = Object.keys(DB).map(function (t) { return [t]; });
-            var n0 = renderTextTable(["table"], trows);
+            var n0 = renderTextTable(target, ["table"], trows);
             done(n0, summarize(["table"], trows));
             return;
           }
           if (up === "HELP") {
-            say("Commands: SELECT ... FROM ... [WHERE ...] &middot; TABLES &middot; HELP &middot; CLEAR<br>" +
+            say(target, "Commands: SELECT ... FROM ... [WHERE ...] &middot; TABLES &middot; HELP &middot; CLEAR<br>" +
               "Tip: press Tab to autocomplete table and column names.");
             done(0, null);
             return;
           }
           if (up === "CLEAR") {
-            sqlQuery.innerHTML = "";
-            sqlOut.innerHTML = '<div class="dim">-- ask something in the chat</div>';
+            thread.innerHTML = "";
+            welcome();
             done(0, null);
             return;
           }
 
           var m = q.match(/^SELECT\s+(.+?)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+))?$/i);
           if (!m) {
-            say("Hmm, I only speak simple SELECTs so far. Try: SELECT * FROM experience;");
+            say(target, "Hmm, I only speak simple SELECTs so far. Try: SELECT * FROM experience;");
             errorTone();
             done(0, null);
             return;
@@ -904,7 +832,7 @@
           var table = DB[m[2].toLowerCase()];
           if (!table) {
             var guess = Object.keys(DB).filter(function (t) { return t.indexOf(m[2].toLowerCase().slice(0, 3)) === 0; })[0];
-            say("No table named \u2018" + esc(m[2]) + "\u2019." +
+            say(target, "No table named \u2018" + esc(m[2]) + "\u2019." +
               (guess ? " Did you mean <b>" + esc(guess) + "</b>?" : " Try TABLES to see what\u2019s here."));
             errorTone();
             done(0, null);
@@ -918,7 +846,7 @@
             cols = m[1].split(",").map(function (c) { return c.trim().toLowerCase(); });
             var bad = cols.filter(function (c) { return table.columns.indexOf(c) === -1; });
             if (bad.length) {
-              say("No column \u2018" + esc(bad[0]) + "\u2019 in " + esc(m[2].toLowerCase()) +
+              say(target, "No column \u2018" + esc(bad[0]) + "\u2019 in " + esc(m[2].toLowerCase()) +
                 ". Columns: " + esc(table.columns.join(", ")));
               errorTone();
               done(0, null);
@@ -930,7 +858,7 @@
           if (m[3]) {
             var w = m[3].match(/^(\w+)\s*(=|LIKE)\s*'(.*)'$/i);
             if (!w || table.columns.indexOf(w[1].toLowerCase()) === -1) {
-              say("I only understand WHERE column = \u2018value\u2019 or WHERE column LIKE \u2018%value%\u2019.");
+              say(target, "I only understand WHERE column = \u2018value\u2019 or WHERE column LIKE \u2018%value%\u2019.");
               errorTone();
               done(0, null);
               return;
@@ -947,32 +875,30 @@
           var projected = rows.map(function (r) { return idxs.map(function (i) { return r[i]; }); });
 
           if (projected.length === 0) {
-            say("0 rows \u2014 no matches.");
+            say(target, "0 rows \u2014 no matches.");
             errorTone();
             done(0, null);
             return;
           }
           var summary = summarize(cols, projected);
           if (cols.length === 1 && cols[0] === "answer") {
-            done(renderAnswer(projected), null);
+            done(renderAnswer(target, projected), null);
           } else {
-            done(renderTextTable(cols, projected), summary);
+            done(renderTextTable(target, cols, projected), summary);
           }
         }
 
-        function setQueryText(sql) { sqlQuery.innerHTML = highlightSQL(sql); }
-
-        function typeSQL(sql, done) {
+        function typeInto(qEl, sql, done) {
           animating = true;
           input.disabled = true;
           var i = 0;
           var iv = setInterval(function () {
             i++;
-            sqlQuery.innerHTML = highlightSQL(sql.slice(0, i)) + '<span class="caret"></span>';
+            qEl.innerHTML = highlightSQL(sql.slice(0, i)) + '<span class="caret"></span>';
             keyClick();
             if (i >= sql.length) {
               clearInterval(iv);
-              setQueryText(sql);
+              qEl.innerHTML = highlightSQL(sql);
               setTimeout(function () {
                 input.disabled = false;
                 animating = false;
@@ -982,52 +908,37 @@
           }, 26);
         }
 
-        function expandConsole() {
-          if (!consoleEl.classList.contains("expanded")) {
-            consoleEl.classList.add("expanded");
-            return true;
-          }
-          return false;
-        }
-
-        function execSQL(sql, blurb) {
-          var ind = document.createElement("div");
-          ind.className = "exec-indicator";
-          ind.innerHTML = 'executing<span class="dots"></span>';
-          sqlOut.appendChild(ind);
-          scrollStage();
-          queryTick();
-          setTimeout(function () {
-            ind.remove();
-            runSQL(sql, function (n, summary) {
-              if (n > 0) {
-                var text = blurb || summary;
-                bubbleAI(text
-                  ? esc(text) + ' <span class="dim">(' + n + (n === 1 ? " row" : " rows") + " in the SQL panel)</span>"
-                  : "Full answer in the SQL panel.");
-              }
-              scrollThread();
-            });
-          }, 750);
-        }
-
         function ask(label, sql, animate, blurb) {
           if (animating) return;
           sql = sql.replace(/;+\s*$/, "");
           bubbleUser(label);
+          var resp = document.createElement("div");
+          resp.className = "msg msg-ai";
+          resp.innerHTML = '<div class="sql-block">' +
+            '<div class="sql-queryline"><span class="prompt">cynthia=#</span> <code class="sql-q"></code></div>' +
+            '<div class="sql-res"></div></div>';
+          thread.appendChild(resp);
+          var qEl = resp.querySelector(".sql-q");
+          var resEl = resp.querySelector(".sql-res");
           scrollThread();
-          sqlOut.innerHTML = "";
-          var justExpanded = expandConsole();
-          var start = function () {
-            if (animate) {
-              typeSQL(sql, function () { execSQL(sql, blurb); });
-            } else {
-              setQueryText(sql);
-              execSQL(sql, blurb);
-            }
+          var run = function () {
+            resEl.innerHTML = '<div class="exec-indicator">executing<span class="dots"></span></div>';
+            scrollThread();
+            queryTick();
+            setTimeout(function () {
+              resEl.innerHTML = "";
+              runSQL(sql, resEl, function (n, summary) {
+                if (n > 0) {
+                  var text = blurb || summary;
+                  resEl.insertAdjacentHTML("beforeend",
+                    '<div class="chat-summary">' + (text ? esc(text) : "Full answer above.") + "</div>");
+                }
+                scrollThread();
+              });
+            }, 750);
           };
-          if (justExpanded) setTimeout(start, 450);
-          else start();
+          if (animate) typeInto(qEl, sql, run);
+          else { qEl.innerHTML = highlightSQL(sql); run(); }
         }
 
         function routeText(t) {
@@ -1089,8 +1000,8 @@
               ask(r.label, r.sql, false, r.blurb);
             } else {
               bubbleUser(v);
-              bubbleAI('<span class="dim">Try one of the suggestions above \u2014 I know about experience, tools, and skills.</span>');
-              errorTone();
+              bubbleAI("That\u2019s not in my database yet \u2014 " +
+                '<a href="mailto:' + EMAIL + '">email Cynthia for an answer</a>.');
               scrollThread();
             }
           }
@@ -1105,8 +1016,11 @@
           if (soundOn) successChime();
         });
 
-        bubbleAI("Hey \u2014 I\u2019m Cynthia\u2019s career database. Ask me anything, or tap a suggestion below.");
-        scrollThread();
+        function welcome() {
+          bubbleAI("Hey \u2014 I\u2019m Cynthia\u2019s career database. Ask me anything, or tap a suggestion below.");
+          scrollThread();
+        }
+        welcome();
       })();
     </script>
   </body>
