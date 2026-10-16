@@ -276,6 +276,7 @@
         --ed-faint-row: rgba(38, 37, 30, 0.07);
         --ed-inset: rgba(38, 37, 30, 0.03);
         --ed-table-bg: #faf9f5;
+        --ed-th-bg: #e3e1d9;
         --ed-accent: #f54e00;
         --ed-bubble: rgba(245, 78, 0, 0.08);
         --ed-bubble-line: rgba(245, 78, 0, 0.28);
@@ -299,6 +300,7 @@
           --ed-faint-row: rgba(237, 236, 236, 0.07);
           --ed-inset: rgba(237, 236, 236, 0.04);
           --ed-table-bg: #1d1b14;
+          --ed-th-bg: #2b2921;
           --ed-accent: #f54e00;
           --ed-bubble: rgba(245, 78, 0, 0.12);
           --ed-bubble-line: rgba(245, 78, 0, 0.3);
@@ -361,6 +363,12 @@
       }
       .msg-ai .dim { color: var(--ed-muted); }
       .msg-ai a { color: var(--ed-accent); }
+      .msg-ai .email-fallback a {
+        color: inherit;
+        background: none;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
       /* SQL block inside the chat response */
       .sql-block {
         margin-top: 0.5rem;
@@ -397,8 +405,8 @@
         overflow: hidden;
       }
       .sql-grid th {
-        background: var(--ed-accent);
-        color: #fff;
+        background: var(--ed-th-bg);
+        color: var(--ed-text);
         text-align: left;
         font-weight: 600;
         padding: 0.45rem 0.7rem;
@@ -928,7 +936,7 @@
           var resp = document.createElement("div");
           resp.className = "msg msg-ai";
           resp.innerHTML = '<div class="sql-block">' +
-            '<div class="sql-queryline"><span class="prompt">cynthia=#</span> <code class="sql-q"></code></div>' +
+            '<div class="sql-queryline"><code class="sql-q"></code></div>' +
             '<div class="sql-res"></div></div>';
           thread.appendChild(resp);
           var qEl = resp.querySelector(".sql-q");
@@ -1009,7 +1017,7 @@
             } else {
               bubbleUser(v);
               bubbleAI('<span class="email-fallback">That\u2019s not in my database yet \u2014 ' +
-                '<a href="mailto:' + EMAIL + '">email Cynthia for an answer</a>.</span>');
+                '<a href="mailto:' + EMAIL + '">Please email Cynthia for an answer</a>.</span>');
               scrollThread();
             }
           }
