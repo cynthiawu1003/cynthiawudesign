@@ -654,7 +654,7 @@
             columns: ["role", "company", "location", "dates", "highlight"],
             rows: [
               ["Lead Product Designer", "Meta", "New York, NY", "Feb 2023 \u2013 present", "GenAI, AI agent, Meta AI Award."],
-              ["Product Designer", "Meta", "Menlo Park, CA", "2019 \u2013 2023", ""],
+              ["Product Designer", "Meta", "Menlo Park, CA", "2019 \u2013 2023", "B2C calling, Design system, Career transition"],
               ["Data Science Manager", "Minted", "San Francisco, CA", "2015 \u2013 2019", "e-commerce experiences"]
             ]
           },
@@ -981,6 +981,14 @@
           input.setSelectionRange(np, np);
         }
 
+        function logEvent(type, data) {
+          try {
+            var payload = JSON.stringify({ type: type, data: String(data == null ? "" : data) });
+            if (navigator.sendBeacon) { navigator.sendBeacon("/api/log", payload); }
+            else { fetch("/api/log", { method: "POST", body: payload, keepalive: true }); }
+          } catch (e) {}
+        }
+
         PROMPTS.forEach(function (p) {
           var btn = document.createElement("button");
           btn.type = "button";
@@ -988,6 +996,7 @@
           btn.innerHTML = '<span class="send-ico"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m600-200-56-57 143-143H300q-75 0-127.5-52.5T120-580q0-75 52.5-127.5T300-760h20v80h-20q-42 0-71 29t-29 71q0 42 29 71t71 29h387L544-624l56-56 240 240-240 240Z"/></svg></span>' + esc(p.label);
           btn.addEventListener("click", function () {
             btn.style.display = "none";
+            logEvent("prompt_click", p.label);
             ask(p.label, p.sql, true, p.blurb);
           });
           suggestRow.appendChild(btn);
@@ -1001,8 +1010,11 @@
             input.value = "";
             var r = routeText(v);
             if (r) {
+              if (/^(select|tables|help|clear)\b/i.test(v)) logEvent("sql", v);
+              else logEvent("message", v);
               ask(v, r.sql, false, r.blurb);
             } else {
+              logEvent("fallback", v);
               bubbleUser(v);
               bubbleAI('<span class="email-fallback">That\u2019s not in my database yet. Please ' +
                 '<a href="mailto:' + EMAIL + '">email Cynthia</a> for an answer.</span>');
