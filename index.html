@@ -625,6 +625,7 @@
 
       // Interactive SQL resume console : merged chat (SQL lives inside the response)
       (function () {
+        var consoleEl = document.getElementById("console");
         var thread = document.getElementById("chat-thread");
         var input = document.getElementById("chat-input");
         var suggestRow = document.getElementById("suggest-row");
@@ -985,7 +986,7 @@
           var btn = document.createElement("button");
           btn.type = "button";
           btn.className = "suggest";
-          btn.innerHTML = '<span class="send-ico">\u27a4</span>' + esc(p.label);
+          btn.innerHTML = '<span class="send-ico">\u23ce</span>' + esc(p.label);
           btn.addEventListener("click", function () {
             btn.style.display = "none";
             ask(p.label, p.sql, true, p.blurb);
