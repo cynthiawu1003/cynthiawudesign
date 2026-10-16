@@ -1,6 +1,12 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      try {
+        var __t = localStorage.getItem("cynthia-theme");
+        if (__t === "light" || __t === "dark") document.documentElement.setAttribute("data-theme", __t);
+      } catch (e) {}
+    </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
@@ -25,13 +31,24 @@
         --text-size: 17px;
       }
       @media (prefers-color-scheme: dark) {
-        :root {
+        :root:not([data-theme="light"]) {
           --bg: #14120b;
           --ink: #edecec;
           --ink-soft: #edecec99;
           --ink-faint: #edecec66;
           --accent: #f54e00;
         }
+      }
+      :root[data-theme="dark"] {
+        --bg: #14120b;
+        --ink: #edecec;
+        --ink-soft: #edecec99;
+        --ink-faint: #edecec66;
+        --accent: #f54e00;
+        color-scheme: dark;
+      }
+      :root[data-theme="light"] {
+        color-scheme: light;
       }
 
       * { box-sizing: border-box; }
@@ -137,8 +154,9 @@
       /* intro text colors match cynthiawudesign.com */
       .intro { --ink: #1c1a17; --ink-soft: #4c4741; }
       @media (prefers-color-scheme: dark) {
-        .intro { --ink: #ece7dc; --ink-soft: #b7b0a1; }
+        html:not([data-theme="light"]) .intro { --ink: #ece7dc; --ink-soft: #b7b0a1; }
       }
+      html[data-theme="dark"] .intro { --ink: #ece7dc; --ink-soft: #b7b0a1; }
 
       /* ---------- contact ---------- */
       .contact p { color: var(--ink-soft); margin: 0 0 1rem; font-weight: 400; }
@@ -271,6 +289,35 @@
       footer .mono { font-size: 11px; }
 
 
+      /* ---------- theme toggle ---------- */
+      .theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 60;
+        width: 38px;
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        color: var(--ink-soft);
+        cursor: pointer;
+        padding: 0;
+      }
+      .theme-toggle:hover { color: var(--ink); }
+      .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+      .theme-toggle svg { width: 18px; height: 18px; }
+      .theme-toggle .icon-sun { display: none; }
+      html[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+      html[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+      @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) .theme-toggle .icon-moon { display: none; }
+        html:not([data-theme="light"]) .theme-toggle .icon-sun { display: block; }
+      }
+
       /* ---------- interactive SQL console : merged chat ---------- */
       .demo { margin-top: 1.5rem; }
       .editor {
@@ -296,7 +343,7 @@
         flex-direction: column;
       }
       @media (prefers-color-scheme: dark) {
-        .editor {
+        html:not([data-theme="light"]) .editor {
           --ed-bg: #14120b;
           --ed-text: #edecec;
           --ed-muted: rgba(237, 236, 236, 0.45);
@@ -310,6 +357,20 @@
           --ed-kw: #ff8a3d;
           --ed-str: #9ece9a;
         }
+      }
+      html[data-theme="dark"] .editor {
+        --ed-bg: #14120b;
+        --ed-text: #edecec;
+        --ed-muted: rgba(237, 236, 236, 0.45);
+        --ed-faint-line: rgba(237, 236, 236, 0.12);
+        --ed-faint-row: rgba(237, 236, 236, 0.07);
+        --ed-inset: rgba(237, 236, 236, 0.04);
+        --ed-table-bg: #1d1b14;
+        --ed-accent: #f54e00;
+        --ed-bubble: rgba(245, 78, 0, 0.12);
+        --ed-bubble-line: rgba(245, 78, 0, 0.3);
+        --ed-kw: #ff8a3d;
+        --ed-str: #9ece9a;
       }
       .editor-bar {
         display: flex;
@@ -487,6 +548,10 @@
     </style>
   </head>
   <body>
+    <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle light and dark mode">
+      <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+    </button>
     <div class="page">
 
       <!-- Intro -->
@@ -553,6 +618,21 @@
       // Footer year
       var __yearEl = document.getElementById("year");
       if (__yearEl) __yearEl.textContent = new Date().getFullYear();
+
+      // Theme toggle: manual light/dark override, remembered across visits
+      (function () {
+        var btn = document.getElementById("theme-toggle");
+        if (!btn) return;
+        btn.addEventListener("click", function () {
+          var el = document.documentElement;
+          var cur = el.getAttribute("data-theme");
+          var systemDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var isDark = cur ? cur === "dark" : !!systemDark;
+          var next = isDark ? "light" : "dark";
+          el.setAttribute("data-theme", next);
+          try { localStorage.setItem("cynthia-theme", next); } catch (e) {}
+        });
+      })();
 
       // Placeholder links stay put until real URLs replace them
       document.querySelectorAll("a[data-placeholder]").forEach(function (link) {
@@ -1000,7 +1080,7 @@
             input.value = "";
             var r = routeText(v);
             if (r) {
-              ask(r.label, r.sql, false, r.blurb);
+              ask(v, r.sql, false, r.blurb);
             } else {
               bubbleUser(v);
               bubbleAI('<span class="email-fallback">That\u2019s not in my database yet. Please ' +
