@@ -267,7 +267,7 @@
 
 
       /* ---------- interactive SQL console : merged chat ---------- */
-      .demo { margin-top: 3.5rem; }
+      .demo { margin-top: 1.5rem; }
       .editor {
         --ed-bg: #f2f1ed;
         --ed-text: #26251e;
@@ -275,6 +275,7 @@
         --ed-faint-line: rgba(38, 37, 30, 0.1);
         --ed-faint-row: rgba(38, 37, 30, 0.07);
         --ed-inset: rgba(38, 37, 30, 0.03);
+        --ed-table-bg: #faf9f5;
         --ed-accent: #f54e00;
         --ed-bubble: rgba(245, 78, 0, 0.08);
         --ed-bubble-line: rgba(245, 78, 0, 0.28);
@@ -297,6 +298,7 @@
           --ed-faint-line: rgba(237, 236, 236, 0.12);
           --ed-faint-row: rgba(237, 236, 236, 0.07);
           --ed-inset: rgba(237, 236, 236, 0.04);
+          --ed-table-bg: #1d1b14;
           --ed-accent: #f54e00;
           --ed-bubble: rgba(245, 78, 0, 0.12);
           --ed-bubble-line: rgba(245, 78, 0, 0.3);
@@ -380,18 +382,36 @@
         animation: caret-blink 1.1s steps(2, start) infinite;
       }
       @keyframes caret-blink { 50% { opacity: 0; } }
-      /* SQL-style text table: monospace, pipe separators, === header rule */
-      .sql-table {
-        margin: 0.4rem 0 0.2rem;
+      /* SQL result as a real table: colored header, lighter body */
+      .sql-grid {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 0.5rem 0 0.2rem;
         font-family: inherit;
         font-size: 13px;
-        line-height: 1.7;
-        overflow-x: auto;
+        line-height: 1.6;
+        background: var(--ed-table-bg);
+        border: 1px solid var(--ed-faint-line);
+        border-radius: 8px;
+        overflow: hidden;
       }
-      .sql-table .trow { display: block; animation: row-in 320ms ease both; }
+      .sql-grid th {
+        background: var(--ed-accent);
+        color: #fff;
+        text-align: left;
+        font-weight: 600;
+        padding: 0.45rem 0.7rem;
+        white-space: nowrap;
+      }
+      .sql-grid td {
+        padding: 0.4rem 0.7rem;
+        border-top: 1px solid var(--ed-faint-line);
+        vertical-align: top;
+      }
+      .sql-grid tbody tr { animation: row-in 320ms ease both; }
       @keyframes row-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
       .rows-note { color: var(--ed-muted); font-size: 12.5px; margin: 0.3rem 0 0; }
-      .chat-summary { color: var(--ed-muted); font-size: 12.5px; margin-top: 0.5rem; }
       .answer-card {
         border-left: 2px solid var(--ed-accent);
         padding: 0.1rem 0 0.1rem 0.9rem;
@@ -423,7 +443,7 @@
       .suggest:hover { background: var(--ed-bubble); }
       .suggest .send-ico { margin-right: 0.35em; }
       .sql-divider { height: 1px; background: var(--ed-faint-line); margin: 0.5rem 0; }
-      .email-fallback { font-size: 13px; }
+
       .editor-inputrow {
         display: flex;
         align-items: center;
@@ -467,7 +487,7 @@
       }
       /* beat the site-wide 17px div/span rule inside the console */
       .chat-thread div, .chat-thread span, .chat-thread code { font-size: 13.5px; }
-      .chat-thread .rows-note, .chat-thread .chat-summary { font-size: 12.5px; }
+      .chat-thread .rows-note { font-size: 12.5px; }
       .pane-tag { font-size: 11px; }
     </style>
   </head>
@@ -752,28 +772,16 @@
           return '<div class="rows-note">' + n + (n === 1 ? " row" : " rows") + " in " + ms + "ms</div>";
         }
 
-        // SQL-style text table: monospace, pipe separators, === header rule
+        // SQL result as a real table: colored header, lighter body
         function renderTextTable(target, cols, rows) {
-          var widths = cols.map(function (c, i) {
-            var w = String(c).length;
-            rows.forEach(function (r) { w = Math.max(w, String(r[i]).length); });
-            return Math.min(w, 30);
-          });
-          function pad(s, w) {
-            s = String(s).replace(/[\u2013\u2014]/g, "-").replace(/\u00b7/g, "-").replace(/\u2026/g, "...");
-            if (s.length > w) s = s.slice(0, w - 3) + "...";
-            while (s.length < w) s += " ";
-            return s;
-          }
-          function line(cells) {
-            return cells.map(function (c, i) { return pad(c, widths[i]); }).join(" | ");
-          }
-          var html = '<pre class="sql-table">' + esc(line(cols)) + "\n" +
-            esc(widths.map(function (w) { return new Array(w + 1).join("="); }).join(" | ")) + "\n";
+          var html = '<table class="sql-grid"><thead><tr>' +
+            cols.map(function (c) { return "<th>" + esc(c) + "</th>"; }).join("") +
+            "</tr></thead><tbody>";
           rows.forEach(function (r, ri) {
-            html += '<span class="trow" style="animation-delay:' + (ri * 80) + 'ms">' + esc(line(r)) + "</span>\n";
+            html += '<tr style="animation-delay:' + (ri * 80) + 'ms">' +
+              r.map(function (c) { return "<td>" + esc(c) + "</td>"; }).join("") + "</tr>";
           });
-          html += "</pre>";
+          html += "</tbody></table>";
           target.insertAdjacentHTML("beforeend", html);
           successChime();
           scrollThread();
@@ -932,12 +940,7 @@
             queryTick();
             setTimeout(function () {
               resEl.innerHTML = '<div class="sql-divider"></div>';
-              runSQL(sql, resEl, function (n, summary) {
-                if (n > 0) {
-                  var text = blurb || summary;
-                  resEl.insertAdjacentHTML("beforeend",
-                    '<div class="chat-summary">' + (text ? esc(text) : "Full answer above.") + "</div>");
-                }
+              runSQL(sql, resEl, function () {
                 scrollThread();
               });
             }, 750);
