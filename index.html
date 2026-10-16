@@ -319,13 +319,6 @@
         border-bottom: 1px solid var(--ed-faint-line);
         flex: none;
       }
-      .ed-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: var(--ed-muted);
-        opacity: 0.35;
-      }
       .editor-title {
         margin-left: 0.4rem;
         color: var(--ed-muted);
@@ -366,7 +359,7 @@
       }
       .msg-ai .dim { color: var(--ed-muted); }
       .msg-ai a { color: var(--ed-accent); }
-      .msg-ai .email-fallback a { color: var(--ed-text); }
+      .msg-ai .email-fallback a { color: var(--ed-accent); }
       /* SQL block inside the chat response */
       .sql-block {
         margin-top: 0.5rem;
@@ -518,7 +511,6 @@
       <section class="demo">
         <div class="editor console" id="console">
           <div class="editor-bar">
-            <span class="ed-dot"></span><span class="ed-dot"></span><span class="ed-dot"></span>
             <span class="editor-title">cynthia_resume.db</span>
             <button type="button" class="sound-toggle" id="sound-toggle" aria-label="Mute sound effects">&#x1F50A;</button>
           </div>
@@ -529,7 +521,7 @@
           <div class="editor-inputrow">
             <span class="prompt">&gt;</span>
             <input id="chat-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
-              aria-label="Chat input" placeholder="Ask about Cynthia's career..." />
+              aria-label="Chat input" placeholder="Type in plain English or write a query..." />
           </div>
           <p class="editor-hint"><kbd>Tab</kbd> autocompletes &middot; <kbd>Enter</kbd> sends</p>
         </div>
@@ -1011,8 +1003,8 @@
               ask(r.label, r.sql, false, r.blurb);
             } else {
               bubbleUser(v);
-              bubbleAI('<span class="email-fallback">That\u2019s not in my database yet. ' +
-                '<a href="mailto:' + EMAIL + '">Please email Cynthia for an answer.</a></span>');
+              bubbleAI('<span class="email-fallback">That\u2019s not in my database yet. Please ' +
+                '<a href="mailto:' + EMAIL + '">email Cynthia</a> for an answer.</span>');
               scrollThread();
             }
           }
