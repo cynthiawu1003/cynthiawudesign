@@ -268,7 +268,6 @@
 
       /* ---------- interactive SQL console : merged chat ---------- */
       .demo { margin-top: 3.5rem; }
-      .demo-caption { color: var(--ink-soft); margin: 0 0 1rem; }
       .editor {
         --ed-bg: #f2f1ed;
         --ed-text: #26251e;
@@ -342,10 +341,12 @@
         font-size: 13.5px;
         line-height: 1.7;
         flex: 1;
-        min-height: 320px;
-        max-height: 480px;
+        min-height: 140px;
+        max-height: 240px;
         overflow-y: auto;
+        transition: min-height 450ms ease, max-height 450ms ease;
       }
+      .console.chatting .chat-thread { min-height: 320px; max-height: 480px; }
       .msg { margin: 0 0 0.9rem; }
       .msg-user { display: flex; justify-content: flex-end; }
       .msg-user .bubble {
@@ -420,6 +421,9 @@
         transition: background 200ms;
       }
       .suggest:hover { background: var(--ed-bubble); }
+      .suggest .send-ico { margin-right: 0.35em; }
+      .sql-divider { height: 1px; background: var(--ed-faint-line); margin: 0.5rem 0; }
+      .email-fallback { font-size: 13px; }
       .editor-inputrow {
         display: flex;
         align-items: center;
@@ -490,7 +494,6 @@
 
       <!-- Interactive SQL resume console : merged chat -->
       <section class="demo">
-        <p class="demo-caption">Ask in the chat &mdash; watch it become SQL.</p>
         <div class="editor console" id="console">
           <div class="editor-bar">
             <span class="ed-dot"></span><span class="ed-dot"></span><span class="ed-dot"></span>
@@ -756,8 +759,8 @@
             return Math.min(w, 30);
           });
           function pad(s, w) {
-            s = String(s);
-            if (s.length > w) s = s.slice(0, w - 1) + "\u2026";
+            s = String(s).replace(/[\u2013\u2014]/g, "-").replace(/\u00b7/g, "-").replace(/\u2026/g, "...");
+            if (s.length > w) s = s.slice(0, w - 3) + "...";
             while (s.length < w) s += " ";
             return s;
           }
@@ -770,7 +773,7 @@
             html += '<span class="trow" style="animation-delay:' + (ri * 80) + 'ms">' + esc(line(r)) + "</span>\n";
           });
           html += "</pre>";
-          target.insertAdjacentHTML("beforeend", html + noteHtml(rows.length));
+          target.insertAdjacentHTML("beforeend", html);
           successChime();
           scrollThread();
           return rows.length;
@@ -780,7 +783,7 @@
           rows.forEach(function (r) {
             html += '<div class="answer-card">' + esc(r[r.length - 1]) + "</div>";
           });
-          target.insertAdjacentHTML("beforeend", html + noteHtml(rows.length));
+          target.insertAdjacentHTML("beforeend", html);
           successChime();
           scrollThread();
           return rows.length;
@@ -911,6 +914,7 @@
         function ask(label, sql, animate, blurb) {
           if (animating) return;
           sql = sql.replace(/;+\s*$/, "");
+          consoleEl.classList.add("chatting");
           bubbleUser(label);
           var resp = document.createElement("div");
           resp.className = "msg msg-ai";
@@ -926,7 +930,7 @@
             scrollThread();
             queryTick();
             setTimeout(function () {
-              resEl.innerHTML = "";
+              resEl.innerHTML = '<div class="sql-divider"></div>';
               runSQL(sql, resEl, function (n, summary) {
                 if (n > 0) {
                   var text = blurb || summary;
@@ -981,9 +985,9 @@
           var btn = document.createElement("button");
           btn.type = "button";
           btn.className = "suggest";
-          btn.textContent = p.label;
+          btn.innerHTML = '<span class="send-ico">\u27a4</span>' + esc(p.label);
           btn.addEventListener("click", function () {
-            if (suggestAbove) suggestAbove.style.display = "none";
+            btn.style.display = "none";
             ask(p.label, p.sql, true, p.blurb);
           });
           suggestRow.appendChild(btn);
@@ -1000,8 +1004,8 @@
               ask(r.label, r.sql, false, r.blurb);
             } else {
               bubbleUser(v);
-              bubbleAI("That\u2019s not in my database yet \u2014 " +
-                '<a href="mailto:' + EMAIL + '">email Cynthia for an answer</a>.');
+              bubbleAI('<span class="email-fallback">That\u2019s not in my database yet \u2014 ' +
+                '<a href="mailto:' + EMAIL + '">email Cynthia for an answer</a>.</span>');
               scrollThread();
             }
           }
