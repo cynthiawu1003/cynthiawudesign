@@ -281,7 +281,6 @@
         --ed-faint-row: rgba(38, 37, 30, 0.07);
         --ed-inset: rgba(38, 37, 30, 0.03);
         --ed-table-bg: #faf9f5;
-        --ed-th-bg: #e3e1d9;
         --ed-accent: #f54e00;
         --ed-bubble: rgba(245, 78, 0, 0.08);
         --ed-bubble-line: rgba(245, 78, 0, 0.28);
@@ -305,7 +304,6 @@
           --ed-faint-row: rgba(237, 236, 236, 0.07);
           --ed-inset: rgba(237, 236, 236, 0.04);
           --ed-table-bg: #1d1b14;
-          --ed-th-bg: #2b2921;
           --ed-accent: #f54e00;
           --ed-bubble: rgba(245, 78, 0, 0.12);
           --ed-bubble-line: rgba(245, 78, 0, 0.3);
@@ -405,7 +403,7 @@
         overflow: hidden;
       }
       .sql-grid th {
-        background: var(--ed-th-bg);
+        background: var(--ed-faint-line);
         color: var(--ed-muted);
         text-align: left;
         font-weight: 400;
@@ -451,7 +449,6 @@
       .suggest:hover { background: var(--ed-bubble); }
       .suggest .send-ico { margin-right: 0.4em; }
       .suggest .send-ico svg { width: 13px; height: 13px; vertical-align: -2px; }
-      .sql-divider { height: 1px; background: var(--ed-faint-line); margin: 0.5rem 0; }
 
       .editor-inputrow {
         display: flex;
@@ -948,7 +945,7 @@
             scrollThread();
             queryTick();
             setTimeout(function () {
-              resEl.innerHTML = '<div class="sql-divider"></div>';
+              resEl.innerHTML = "";
               runSQL(sql, resEl, function () {
                 scrollThread();
               });
