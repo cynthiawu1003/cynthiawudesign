@@ -266,9 +266,19 @@
       footer .mono { font-size: 11px; }
 
 
-      /* ---------- interactive SQL console (chat-style, light-first) ---------- */
+      /* ---------- interactive SQL console : split view (light-first) ---------- */
       .demo { margin-top: 3.5rem; }
       .demo-caption { color: var(--ink-soft); margin: 0 0 1rem; }
+      .split {
+        display: grid;
+        grid-template-columns: 1.05fr 1fr;
+        gap: 1rem;
+        align-items: stretch;
+      }
+      @media (max-width: 720px) {
+        .split { grid-template-columns: 1fr; }
+        .chat-panel { order: -1; }
+      }
       .editor {
         --ed-bg: #f2f1ed;
         --ed-text: #26251e;
@@ -278,12 +288,16 @@
         --ed-accent: #f54e00;
         --ed-bubble: rgba(245, 78, 0, 0.08);
         --ed-bubble-line: rgba(245, 78, 0, 0.28);
+        --ed-kw: #d94800;
+        --ed-str: #2e7d4f;
         background: var(--ed-bg);
         border: 1px solid var(--ed-faint-line);
         border-radius: 14px;
         overflow: hidden;
         outline: none;
         color: var(--ed-text);
+        display: flex;
+        flex-direction: column;
       }
       @media (prefers-color-scheme: dark) {
         .editor {
@@ -295,6 +309,8 @@
           --ed-accent: #f54e00;
           --ed-bubble: rgba(245, 78, 0, 0.12);
           --ed-bubble-line: rgba(245, 78, 0, 0.3);
+          --ed-kw: #ff8a3d;
+          --ed-str: #9ece9a;
         }
       }
       .editor-bar {
@@ -303,6 +319,7 @@
         gap: 6px;
         padding: 0.7rem 1rem;
         border-bottom: 1px solid var(--ed-faint-line);
+        flex: none;
       }
       .ed-dot {
         width: 10px;
@@ -327,14 +344,40 @@
         line-height: 1;
       }
       .sound-toggle:hover { color: var(--ed-text); }
+      /* left: SQL stage */
+      .sql-stage {
+        padding: 1rem 1.2rem 1.1rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 13.5px;
+        line-height: 1.7;
+        flex: 1;
+        min-height: 300px;
+        max-height: 420px;
+        overflow-y: auto;
+      }
+      .sql-queryline { display: flex; gap: 0.6rem; align-items: baseline; margin-bottom: 0.6rem; }
+      #sql-query { word-break: break-word; }
+      #sql-query .kw { color: var(--ed-kw); }
+      #sql-query .str { color: var(--ed-str); }
+      .caret {
+        display: inline-block;
+        width: 8px;
+        height: 1.1em;
+        background: var(--ed-accent);
+        vertical-align: text-bottom;
+        animation: caret-blink 1.1s steps(2, start) infinite;
+      }
+      @keyframes caret-blink { 50% { opacity: 0; } }
+      /* right: chat */
       .chat-thread {
         padding: 1rem 1.2rem 0.2rem;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 13.5px;
         line-height: 1.7;
-        max-height: 380px;
+        flex: 1;
+        min-height: 220px;
+        max-height: 300px;
         overflow-y: auto;
-        min-height: 140px;
       }
       .msg { margin: 0 0 0.9rem; }
       .msg-user { display: flex; justify-content: flex-end; }
@@ -347,7 +390,11 @@
         word-break: break-word;
       }
       .msg-ai .dim { color: var(--ed-muted); }
-      .suggest-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.7rem; }
+      .suggest-above {
+        padding: 0.2rem 1.2rem 0;
+        flex: none;
+      }
+      .suggest-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
       .suggest {
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 12.5px;
@@ -360,6 +407,7 @@
         transition: border-color 200ms;
       }
       .suggest:hover { border-color: var(--ed-accent); }
+      /* shared result styling */
       .result-table { border-collapse: collapse; margin: 0.3rem 0 0.2rem; max-width: 100%; }
       .result-table th {
         text-align: left;
@@ -393,6 +441,7 @@
         gap: 0.6rem;
         padding: 0.9rem 1.2rem 0.3rem;
         border-top: 1px solid var(--ed-faint-line);
+        flex: none;
       }
       .prompt {
         color: var(--ed-accent);
@@ -400,7 +449,7 @@
         font-size: 13.5px;
         white-space: nowrap;
       }
-      #editor-input {
+      #chat-input {
         flex: 1;
         min-width: 0;
         background: transparent;
@@ -411,14 +460,15 @@
         font-size: 13.5px;
         caret-color: var(--ed-accent);
       }
-      #editor-input:disabled { color: var(--ed-text); opacity: 1; }
-      #editor-input::placeholder { color: var(--ed-muted); opacity: 0.7; }
+      #chat-input:disabled { color: var(--ed-text); opacity: 1; }
+      #chat-input::placeholder { color: var(--ed-muted); opacity: 0.7; }
       .editor-hint {
         margin: 0;
         padding: 0.3rem 1.2rem 1.1rem;
         color: var(--ed-muted);
         font-size: 12.5px;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        flex: none;
       }
       .editor-hint kbd {
         border: 1px solid var(--ed-faint-line);
@@ -426,8 +476,10 @@
         padding: 0 0.35em;
         font-size: 11.5px;
       }
-      .chat-thread div, .chat-thread span { font-size: 13.5px; }
-      .chat-thread .rows-note { font-size: 12.5px; }
+      /* beat the site-wide 17px div/span rule inside the console */
+      .chat-thread div, .chat-thread span,
+      .sql-stage div, .sql-stage span, .sql-stage code { font-size: 13.5px; }
+      .chat-thread .rows-note, .sql-stage .rows-note { font-size: 12.5px; }
     </style>
   </head>
   <body>
@@ -451,22 +503,37 @@
       </header>
 
 
-      <!-- Interactive SQL resume console -->
+      <!-- Interactive SQL resume console : split view -->
       <section class="demo">
-        <p class="demo-caption">Don&apos;t take my word for it &mdash; ask the database.</p>
-        <div class="editor" id="editor">
-          <div class="editor-bar">
-            <span class="ed-dot"></span><span class="ed-dot"></span><span class="ed-dot"></span>
-            <span class="editor-title">cynthia_resume.db</span>
-            <button type="button" class="sound-toggle" id="sound-toggle" aria-label="Mute sound effects">&#x1F50A;</button>
+        <p class="demo-caption">Chat on the right &mdash; watch the SQL it runs on the left.</p>
+        <div class="split">
+          <div class="editor sql-panel" id="sql-panel">
+            <div class="editor-bar">
+              <span class="ed-dot"></span><span class="ed-dot"></span><span class="ed-dot"></span>
+              <span class="editor-title">query.sql</span>
+              <button type="button" class="sound-toggle" id="sound-toggle" aria-label="Mute sound effects">&#x1F50A;</button>
+            </div>
+            <div class="sql-stage" id="sql-stage" aria-live="polite">
+              <div class="sql-queryline"><span class="prompt">cynthia=#</span> <code id="sql-query"></code></div>
+              <div id="sql-output"><div class="dim">-- pick a prompt on the right to see the SQL</div></div>
+            </div>
           </div>
-          <div class="chat-thread" id="editor-output" aria-live="polite"></div>
-          <div class="editor-inputrow">
-            <span class="prompt">cynthia=#</span>
-            <input id="editor-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
-              aria-label="SQL query input" placeholder="Ask about my career in SQL..." />
+          <div class="editor chat-panel" id="chat-panel">
+            <div class="editor-bar">
+              <span class="ed-dot"></span><span class="ed-dot"></span><span class="ed-dot"></span>
+              <span class="editor-title">chat</span>
+            </div>
+            <div class="chat-thread" id="chat-thread" aria-live="polite"></div>
+            <div class="suggest-above">
+              <div class="suggest-row" id="suggest-row"></div>
+            </div>
+            <div class="editor-inputrow">
+              <span class="prompt">&gt;</span>
+              <input id="chat-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+                aria-label="Chat input" placeholder="Ask about Cynthia's career..." />
+            </div>
+            <p class="editor-hint"><kbd>Tab</kbd> autocompletes &middot; <kbd>Enter</kbd> sends</p>
           </div>
-          <p class="editor-hint"><kbd>Tab</kbd> autocompletes &middot; <kbd>Enter</kbd> runs &middot; try TABLES or HELP</p>
         </div>
       </section>
 
@@ -580,11 +647,14 @@
 
       })();
 
-      // Interactive SQL resume console (chat-style)
+      // Interactive SQL resume console : split view (chat right, SQL left)
       (function () {
-        var out = document.getElementById("editor-output");
-        var input = document.getElementById("editor-input");
-        if (!out || !input) return;
+        var thread = document.getElementById("chat-thread");
+        var sqlQuery = document.getElementById("sql-query");
+        var sqlOut = document.getElementById("sql-output");
+        var input = document.getElementById("chat-input");
+        var suggestRow = document.getElementById("suggest-row");
+        if (!thread || !sqlQuery || !sqlOut || !input || !suggestRow) return;
 
         var DB = {
           experience: {
@@ -593,6 +663,26 @@
               ["Lead Product Designer", "Meta", "New York, NY", "Feb 2023 \u2013 present", "GenAI messaging \u00b7 Meta AI Award"],
               ["Product Designer", "Meta", "Menlo Park, CA", "2019 \u2013 2023", ""],
               ["Data Science Manager", "Minted", "San Francisco, CA", "2015 \u2013 2019", "e-commerce experiences"]
+            ]
+          },
+          tools: {
+            columns: ["tool", "category"],
+            rows: [
+              ["Figma", "design"],
+              ["Cursor", "AI-assisted coding"],
+              ["VS Code", "code"],
+              ["Claude", "AI"],
+              ["SQL", "data"]
+            ]
+          },
+          skills: {
+            columns: ["skill", "area"],
+            rows: [
+              ["GenAI and agentic experiences", "domain"],
+              ["B2B enterprise design", "domain"],
+              ["E-commerce", "domain"],
+              ["SQL & data analysis", "data"],
+              ["Statistics", "foundation"]
             ]
           },
           interview_qa: {
@@ -607,6 +697,12 @@
             ]
           }
         };
+
+        var PROMPTS = [
+          { label: "What is your working experience?", sql: "SELECT role, company, location, dates FROM experience;" },
+          { label: "What tools do you use?", sql: "SELECT tool, category FROM tools;" },
+          { label: "What skills do you have?", sql: "SELECT skill, area FROM skills;" }
+        ];
 
         var WORDS = ["SELECT", "FROM", "WHERE", "LIKE", "AND", "TABLES", "HELP", "CLEAR", "*"];
         Object.keys(DB).forEach(function (t) {
@@ -651,18 +747,29 @@
         function esc(str) {
           return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
-        function scrollDown() { out.scrollTop = out.scrollHeight; }
-
-        function ai(html) {
-          out.insertAdjacentHTML("beforeend", '<div class="msg msg-ai">' + html + "</div>");
+        function highlightSQL(src) {
+          var t = esc(src);
+          t = t.replace(/'[^']*'/g, function (m) { return '<span class="str">' + m + "</span>"; });
+          t = t.replace(/\b(SELECT|FROM|WHERE|LIKE|AND|TABLES|HELP|CLEAR)\b/gi,
+            function (m) { return '<span class="kw">' + m.toUpperCase() + "</span>"; });
+          return t;
         }
-        function echo(q) {
-          out.insertAdjacentHTML("beforeend",
-            '<div class="msg msg-user"><div class="bubble">' + esc(q) + "</div></div>");
+        function scrollThread() { thread.scrollTop = thread.scrollHeight; }
+        function scrollStage() {
+          var stage = document.getElementById("sql-stage");
+          if (stage) stage.scrollTop = stage.scrollHeight;
+        }
+
+        function bubbleUser(text) {
+          thread.insertAdjacentHTML("beforeend",
+            '<div class="msg msg-user"><div class="bubble">' + esc(text) + "</div></div>");
+        }
+        function bubbleAI(html) {
+          thread.insertAdjacentHTML("beforeend", '<div class="msg msg-ai">' + html + "</div>");
         }
         function noteHtml(n) {
           var ms = 2 + Math.floor(Math.random() * 8);
-          return '<div class="rows-note">' + n + (n === 1 ? " row" : " rows") + " in " + ms + "ms</div>";
+          return { html: '<div class="rows-note">' + n + (n === 1 ? " row" : " rows") + " in " + ms + "ms</div>", ms: ms };
         }
         function renderTable(cols, rows) {
           var html = '<table class="result-table"><thead><tr>';
@@ -674,47 +781,53 @@
             html += "</tr>";
           });
           html += "</tbody></table>";
-          ai(html + noteHtml(rows.length));
+          var note = noteHtml(rows.length);
+          sqlOut.insertAdjacentHTML("beforeend", html + note.html);
           successChime();
+          scrollStage();
+          return rows.length;
         }
         function renderAnswer(rows) {
           var html = "";
           rows.forEach(function (r) {
             html += '<div class="answer-card">' + esc(r[r.length - 1]) + "</div>";
           });
-          ai(html + noteHtml(rows.length));
+          var note = noteHtml(rows.length);
+          sqlOut.insertAdjacentHTML("beforeend", html + note.html);
           successChime();
+          scrollStage();
+          return rows.length;
         }
-        function say(html) { ai('<div class="dim">' + html + "</div>"); }
-
-        function runQuery(raw) {
-          var q = raw.trim().replace(/;+$/, "");
-          if (!q) return;
-          echo(raw.trim());
-          runQueryBody(q);
+        function say(html) {
+          sqlOut.insertAdjacentHTML("beforeend", '<div class="dim">' + html + "</div>");
+          scrollStage();
         }
 
-        function runQueryBody(q) {
+        function runSQL(q, done) {
           var up = q.toUpperCase();
 
           if (up === "TABLES") {
-            renderTable(["table"], Object.keys(DB).map(function (t) { return [t]; }));
-            scrollDown();
+            done(renderTable(["table"], Object.keys(DB).map(function (t) { return [t]; })));
             return;
           }
           if (up === "HELP") {
             say("Commands: SELECT ... FROM ... [WHERE ...] &middot; TABLES &middot; HELP &middot; CLEAR<br>" +
               "Tip: press Tab to autocomplete table and column names.");
-            scrollDown();
+            done(0);
             return;
           }
-          if (up === "CLEAR") { out.innerHTML = ""; welcome(); scrollDown(); return; }
+          if (up === "CLEAR") {
+            sqlQuery.innerHTML = "";
+            sqlOut.innerHTML = '<div class="dim">-- pick a prompt on the right to see the SQL</div>';
+            done(0);
+            return;
+          }
 
           var m = q.match(/^SELECT\s+(.+?)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+))?$/i);
           if (!m) {
             say("Hmm, I only speak simple SELECTs so far. Try: SELECT * FROM experience;");
             errorTone();
-            scrollDown();
+            done(0);
             return;
           }
           var table = DB[m[2].toLowerCase()];
@@ -723,7 +836,7 @@
             say("No table named \u2018" + esc(m[2]) + "\u2019." +
               (guess ? " Did you mean <b>" + esc(guess) + "</b>?" : " Try TABLES to see what\u2019s here."));
             errorTone();
-            scrollDown();
+            done(0);
             return;
           }
 
@@ -737,7 +850,7 @@
               say("No column \u2018" + esc(bad[0]) + "\u2019 in " + esc(m[2].toLowerCase()) +
                 ". Columns: " + esc(table.columns.join(", ")));
               errorTone();
-              scrollDown();
+              done(0);
               return;
             }
           }
@@ -748,7 +861,7 @@
             if (!w || table.columns.indexOf(w[1].toLowerCase()) === -1) {
               say("I only understand WHERE column = \u2018value\u2019 or WHERE column LIKE \u2018%value%\u2019.");
               errorTone();
-              scrollDown();
+              done(0);
               return;
             }
             var ci = table.columns.indexOf(w[1].toLowerCase());
@@ -765,15 +878,77 @@
           if (projected.length === 0) {
             say("0 rows \u2014 no matches.");
             errorTone();
-            scrollDown();
+            done(0);
             return;
           }
           if (cols.length === 1 && cols[0] === "answer") {
-            renderAnswer(projected);
+            done(renderAnswer(projected));
           } else {
-            renderTable(cols, projected);
+            done(renderTable(cols, projected));
           }
-          scrollDown();
+        }
+
+        function setQueryText(sql) { sqlQuery.innerHTML = highlightSQL(sql); }
+
+        function typeSQL(sql, done) {
+          animating = true;
+          input.disabled = true;
+          var i = 0;
+          var iv = setInterval(function () {
+            i++;
+            sqlQuery.innerHTML = highlightSQL(sql.slice(0, i)) + '<span class="caret"></span>';
+            keyClick();
+            if (i >= sql.length) {
+              clearInterval(iv);
+              setQueryText(sql);
+              setTimeout(function () {
+                input.disabled = false;
+                animating = false;
+                done();
+              }, 350);
+            }
+          }, 26);
+        }
+
+        function execSQL(sql) {
+          var ind = document.createElement("div");
+          ind.className = "exec-indicator";
+          ind.innerHTML = 'executing<span class="dots"></span>';
+          sqlOut.appendChild(ind);
+          scrollStage();
+          queryTick();
+          setTimeout(function () {
+            ind.remove();
+            runSQL(sql, function (n) {
+              if (n > 0) bubbleAI("Found " + n + (n === 1 ? " row" : " rows") + " \u2014 full results on the left.");
+              scrollThread();
+            });
+          }, 750);
+        }
+
+        function ask(label, sql, animate) {
+          if (animating) return;
+          bubbleUser(label);
+          scrollThread();
+          sqlOut.innerHTML = "";
+          if (animate) {
+            typeSQL(sql, function () { execSQL(sql); });
+          } else {
+            setQueryText(sql);
+            execSQL(sql);
+          }
+        }
+
+        function routeText(t) {
+          var l = t.toLowerCase();
+          if (/^(select|tables|help|clear)\b/.test(l)) return { label: t, sql: t };
+          for (var i = 0; i < PROMPTS.length; i++) {
+            if (l.indexOf(PROMPTS[i].label.toLowerCase().slice(8)) !== -1) return PROMPTS[i];
+          }
+          if (/tool/.test(l)) return PROMPTS[1];
+          if (/skill/.test(l)) return PROMPTS[2];
+          if (/experience|work|job|career|background|role/.test(l)) return PROMPTS[0];
+          return null;
         }
 
         function autocomplete() {
@@ -798,59 +973,31 @@
           input.setSelectionRange(np, np);
         }
 
-        function playQuery(sql) {
-          if (animating) return;
-          animating = true;
-          input.disabled = true;
-          input.value = "";
-          input.focus({ preventScroll: true });
-          var i = 0;
-          var iv = setInterval(function () {
-            i++;
-            input.value = sql.slice(0, i);
-            keyClick();
-            if (i >= sql.length) {
-              clearInterval(iv);
-              setTimeout(function () {
-                echo(sql);
-                var ind = document.createElement("div");
-                ind.className = "msg msg-ai";
-                ind.innerHTML = '<div class="exec-indicator">executing<span class="dots"></span></div>';
-                out.appendChild(ind);
-                scrollDown();
-                queryTick();
-                setTimeout(function () {
-                  ind.remove();
-                  runQueryBody(sql.replace(/;+$/, ""));
-                  input.value = "";
-                  input.disabled = false;
-                  animating = false;
-                }, 750);
-              }, 400);
-            }
-          }, 26);
-        }
-
-        function wireSuggests(scope) {
-          (scope || document).querySelectorAll(".suggest").forEach(function (btn) {
-            if (btn.dataset.wired) return;
-            btn.dataset.wired = "1";
-            btn.addEventListener("click", function () { playQuery(btn.getAttribute("data-sql")); });
-          });
-        }
-
-        function welcome() {
-          ai("Ask me anything about Cynthia\u2019s career \u2014 or start with one of these:" +
-            '<div class="suggest-row">' +
-            '<button type="button" class="suggest" data-sql="SELECT role, company, location, dates FROM experience;">Walk me through your background</button>' +
-            '<button type="button" class="suggest" data-sql="SELECT answer FROM interview_qa WHERE topic = \'data_in_design\';">How do you use data in design?</button>' +
-            "</div>");
-          wireSuggests(out);
-        }
+        PROMPTS.forEach(function (p) {
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "suggest";
+          btn.textContent = p.label;
+          btn.addEventListener("click", function () { ask(p.label, p.sql, true); });
+          suggestRow.appendChild(btn);
+        });
 
         input.addEventListener("keydown", function (e) {
           if (e.key === "Tab") { e.preventDefault(); autocomplete(); }
-          else if (e.key === "Enter") { runQuery(input.value); input.value = ""; }
+          else if (e.key === "Enter") {
+            var v = input.value.trim();
+            if (!v || animating) return;
+            input.value = "";
+            var r = routeText(v);
+            if (r) {
+              ask(r.label, r.sql, false);
+            } else {
+              bubbleUser(v);
+              bubbleAI('<span class="dim">Try one of the suggestions above \u2014 I know about experience, tools, and skills.</span>');
+              errorTone();
+              scrollThread();
+            }
+          }
         });
 
         var sndBtn = document.getElementById("sound-toggle");
@@ -862,7 +1009,8 @@
           if (soundOn) successChime();
         });
 
-        welcome();
+        bubbleAI("Hey \u2014 I\u2019m Cynthia\u2019s career database. Ask me anything, or tap a suggestion below.");
+        scrollThread();
       })();
     </script>
   </body>
