@@ -19,9 +19,9 @@ var LABELS = {
 };
 
 module.exports = async function (req, res) {
-  var rwToken = process.env.BLOB_READ_WRITE_TOKEN;
+  var rwToken = process.env.BLOB_READ_WRITE_TOKEN || undefined;
   var viewToken = process.env.LOG_VIEW_TOKEN;
-  if (!rwToken || !viewToken || req.query.token !== viewToken) {
+  if (!viewToken || req.query.token !== viewToken) {
     res.status(403).send("forbidden");
     return;
   }
@@ -41,9 +41,7 @@ module.exports = async function (req, res) {
     var events = await Promise.all(
       recent.map(async function (b) {
         try {
-          var r = await fetch(b.url, {
-            headers: { authorization: "Bearer " + rwToken },
-          });
+          var r = await fetch(b.url);
           if (!r.ok) return null;
           return await r.json();
         } catch (e) {
