@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f7f7f4" />
     <meta name="description" content="Cynthia Wu — data-driven designer specializing in B2B enterprise products." />
     <link rel="icon" href="data:," />
     <title>Cynthia Wu — Product Designer</title>
@@ -16,20 +17,20 @@
     <style>
       :root {
         color-scheme: light dark;
-        --bg: #faf8f4;
-        --ink: #1c1a17;
-        --ink-soft: #4c4741;
-        --ink-faint: #8a8378;
-        --accent: #b34a1f;
+        --bg: #f7f7f4;
+        --ink: #26251e;
+        --ink-soft: #26251e99;
+        --ink-faint: #26251e66;
+        --accent: #f54e00;
         --text-size: 17px;
       }
       @media (prefers-color-scheme: dark) {
         :root {
-          --bg: #16140f;
-          --ink: #ece7dc;
-          --ink-soft: #b7b0a1;
-          --ink-faint: #7d7668;
-          --accent: #e08a5f;
+          --bg: #14120b;
+          --ink: #edecec;
+          --ink-soft: #edecec99;
+          --ink-faint: #edecec66;
+          --accent: #f54e00;
         }
       }
 
@@ -133,6 +134,11 @@
       .intro p { color: var(--ink-soft); margin: 0 0 1rem; font-weight: 400; }
       .intro .draft-row { margin-top: 1rem; }
       .intro .draft-row span.note { color: var(--ink-faint); font-weight: 400; }
+      /* intro text colors match cynthiawudesign.com */
+      .intro { --ink: #1c1a17; --ink-soft: #4c4741; }
+      @media (prefers-color-scheme: dark) {
+        .intro { --ink: #ece7dc; --ink-soft: #b7b0a1; }
+      }
 
       /* ---------- contact ---------- */
       .contact p { color: var(--ink-soft); margin: 0 0 1rem; font-weight: 400; }
@@ -258,12 +264,227 @@
       /* ---------- footer ---------- */
       footer {
         margin-top: 3.5rem;
-        color: var(--ink-faint);
+        color: var(--ink-soft);
         font-weight: 400;
       }
       footer > span { display: block; }
       footer .mono { font-size: 11px; }
 
+
+      /* ---------- interactive SQL console : merged chat ---------- */
+      .demo { margin-top: 1.5rem; }
+      .editor {
+        --ed-bg: #f2f1ed;
+        --ed-text: #26251e;
+        --ed-muted: rgba(38, 37, 30, 0.5);
+        --ed-faint-line: rgba(38, 37, 30, 0.1);
+        --ed-faint-row: rgba(38, 37, 30, 0.07);
+        --ed-inset: rgba(38, 37, 30, 0.03);
+        --ed-table-bg: #faf9f5;
+        --ed-accent: #f54e00;
+        --ed-bubble: rgba(245, 78, 0, 0.08);
+        --ed-bubble-line: rgba(245, 78, 0, 0.28);
+        --ed-kw: #d94800;
+        --ed-str: #2e7d4f;
+        background: var(--ed-bg);
+        border: 1px solid var(--ed-faint-line);
+        border-radius: 14px;
+        overflow: hidden;
+        outline: none;
+        color: var(--ed-text);
+        display: flex;
+        flex-direction: column;
+      }
+      @media (prefers-color-scheme: dark) {
+        .editor {
+          --ed-bg: #14120b;
+          --ed-text: #edecec;
+          --ed-muted: rgba(237, 236, 236, 0.45);
+          --ed-faint-line: rgba(237, 236, 236, 0.12);
+          --ed-faint-row: rgba(237, 236, 236, 0.07);
+          --ed-inset: rgba(237, 236, 236, 0.04);
+          --ed-table-bg: #1d1b14;
+          --ed-accent: #f54e00;
+          --ed-bubble: rgba(245, 78, 0, 0.12);
+          --ed-bubble-line: rgba(245, 78, 0, 0.3);
+          --ed-kw: #ff8a3d;
+          --ed-str: #9ece9a;
+        }
+      }
+      .editor-bar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0.7rem 1rem;
+        border-bottom: 1px solid var(--ed-faint-line);
+        flex: none;
+      }
+      .editor-title {
+        margin-left: 0.4rem;
+        color: var(--ed-muted);
+        font-size: 12.5px;
+      }
+      .sound-toggle {
+        margin-left: auto;
+        background: transparent;
+        border: none;
+        color: var(--ed-muted);
+        cursor: pointer;
+        font-size: 14px;
+        padding: 0.2rem 0.3rem;
+        line-height: 1;
+      }
+      .sound-toggle:hover { color: var(--ed-text); }
+      .sound-toggle svg { width: 16px; height: 16px; display: block; fill: currentColor; }
+      .chat-thread {
+        padding: 1rem 1.2rem 0.2rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 13.5px;
+        line-height: 1.7;
+        flex: 1;
+        min-height: 140px;
+        max-height: 240px;
+        overflow-y: auto;
+        transition: min-height 450ms ease, max-height 450ms ease;
+      }
+      .console.chatting .chat-thread { min-height: 320px; max-height: 480px; }
+      .msg { margin: 0 0 0.9rem; }
+      .msg-user { display: flex; justify-content: flex-end; }
+      .msg-user .bubble {
+        background: var(--ed-bubble);
+        border: 1px solid var(--ed-bubble-line);
+        border-radius: 12px 12px 4px 12px;
+        padding: 0.4rem 0.8rem;
+        max-width: 92%;
+        word-break: break-word;
+      }
+      .msg-ai .dim { color: var(--ed-muted); }
+      .msg-ai a { color: var(--ed-accent); }
+      .msg-ai .email-fallback a { color: var(--ed-accent); }
+      /* SQL block inside the chat response */
+      .sql-block {
+        margin-top: 0.5rem;
+      }
+      .sql-queryline { display: flex; gap: 0.6rem; align-items: baseline; margin-bottom: 0.4rem; }
+      .sql-q { word-break: break-word; }
+      .sql-q .kw { color: var(--ed-kw); }
+      .sql-q .str { color: var(--ed-str); }
+      .caret {
+        display: inline-block;
+        width: 8px;
+        height: 1.1em;
+        background: var(--ed-accent);
+        vertical-align: text-bottom;
+        animation: caret-blink 1.1s steps(2, start) infinite;
+      }
+      @keyframes caret-blink { 50% { opacity: 0; } }
+      /* SQL result as a real table: colored header, lighter body */
+      .sql-grid {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 0.5rem 0 0.2rem;
+        font-family: inherit;
+        font-size: 13px;
+        line-height: 1.6;
+        background: var(--ed-table-bg);
+        border: 1px solid var(--ed-faint-line);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .sql-grid th {
+        background: var(--ed-inset);
+        color: var(--ed-muted);
+        text-align: left;
+        font-weight: 400;
+        padding: 0.45rem 0.7rem;
+        white-space: nowrap;
+      }
+      .sql-grid td {
+        padding: 0.4rem 0.7rem;
+        border-top: 1px solid var(--ed-faint-line);
+        vertical-align: top;
+      }
+      .sql-grid tbody tr { animation: row-in 320ms ease both; }
+      @keyframes row-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+      .rows-note { color: var(--ed-muted); font-size: 12.5px; margin: 0.3rem 0 0; }
+      .answer-card {
+        border-left: 2px solid var(--ed-accent);
+        padding: 0.1rem 0 0.1rem 0.9rem;
+        margin: 0.4rem 0 0.2rem;
+        max-width: 60ch;
+        animation: row-in 320ms ease both;
+      }
+      .exec-indicator { color: var(--ed-muted); margin: 0.2rem 0; }
+      .exec-indicator .dots::after { content: ""; animation: dots 1s steps(1) infinite; }
+      @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+      .suggest-above {
+        padding: 0.4rem 1.2rem 0;
+        margin-bottom: 1rem;
+        flex: none;
+      }
+      .suggest-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+      .suggest {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12.5px;
+        text-align: left;
+        padding: 0.4rem 0.85rem;
+        border-radius: 999px;
+        border: 1px solid var(--ed-accent);
+        background: transparent;
+        color: var(--ed-accent);
+        cursor: pointer;
+        transition: background 200ms;
+      }
+      .suggest:hover { background: var(--ed-bubble); }
+      .suggest .send-ico { margin-right: 0.4em; }
+      .suggest .send-ico svg { width: 13px; height: 13px; vertical-align: -2px; fill: var(--ed-accent); }
+
+      .editor-inputrow {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.9rem 1.2rem 0.3rem;
+        border-top: 1px solid var(--ed-faint-line);
+        flex: none;
+      }
+      .prompt {
+        color: var(--ed-accent);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 13.5px;
+        white-space: nowrap;
+      }
+      #chat-input {
+        flex: 1;
+        min-width: 0;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--ed-text);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 13.5px;
+        caret-color: var(--ed-accent);
+      }
+      #chat-input:disabled { color: var(--ed-text); opacity: 1; }
+      #chat-input::placeholder { color: var(--ed-muted); opacity: 0.7; }
+      .editor-hint {
+        margin: 0;
+        padding: 0.3rem 1.2rem 1.1rem;
+        color: var(--ed-muted);
+        font-size: 12.5px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        flex: none;
+      }
+      .editor-hint kbd {
+        border: 1px solid var(--ed-faint-line);
+        border-radius: 4px;
+        padding: 0 0.35em;
+        font-size: 11.5px;
+      }
+      /* beat the site-wide 17px div/span rule inside the console */
+      .chat-thread div, .chat-thread span, .chat-thread code, .chat-thread a { font-size: 13.5px; }
+      .chat-thread .rows-note { font-size: 12.5px; }
+      .pane-tag { font-size: 11px; }
     </style>
   </head>
   <body>
@@ -285,6 +506,27 @@
           I studied statistics and economics at <a class="org-link" data-logo="berkeley" href="https://www.berkeley.edu" target="_blank" rel="noopener">UC Berkeley</a> and started my career in data science before discovering my passion for design. That journey still shapes how I approach problems today.
         </p>
       </header>
+
+
+      <!-- Interactive SQL resume console : merged chat -->
+      <section class="demo">
+        <div class="editor console" id="console">
+          <div class="editor-bar">
+            <span class="editor-title">cynthia_resume.db</span>
+            <button type="button" class="sound-toggle" id="sound-toggle" aria-label="Mute sound effects"></button>
+          </div>
+          <div class="chat-thread" id="chat-thread" aria-live="polite"></div>
+          <div class="suggest-above" id="suggest-above">
+            <div class="suggest-row" id="suggest-row"></div>
+          </div>
+          <div class="editor-inputrow">
+            <span class="prompt">&gt;</span>
+            <input id="chat-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+              aria-label="Chat input" placeholder="Type in plain English or write a query..." />
+          </div>
+          <p class="editor-hint"><kbd>Tab</kbd> autocompletes &middot; <kbd>Enter</kbd> sends</p>
+        </div>
+      </section>
 
       <!-- Contact -->
       <section class="contact">
@@ -310,7 +552,8 @@
 
     <script>
       // Footer year
-      document.getElementById("year").textContent = new Date().getFullYear();
+      var __yearEl = document.getElementById("year");
+      if (__yearEl) __yearEl.textContent = new Date().getFullYear();
 
       // Placeholder links stay put until real URLs replace them
       document.querySelectorAll("a[data-placeholder]").forEach(function (link) {
@@ -393,6 +636,400 @@
           });
         });
 
+      })();
+
+      // Interactive SQL resume console : merged chat (SQL lives inside the response)
+      (function () {
+        var consoleEl = document.getElementById("console");
+        var thread = document.getElementById("chat-thread");
+        var input = document.getElementById("chat-input");
+        var suggestRow = document.getElementById("suggest-row");
+        var suggestAbove = document.getElementById("suggest-above");
+        if (!thread || !input || !suggestRow) return;
+
+        var EMAIL = "cynthiawu1003@gmail.com";
+
+        var DB = {
+          experience: {
+            columns: ["role", "company", "location", "dates", "highlight"],
+            rows: [
+              ["Lead Product Designer", "Meta", "New York, NY", "Feb 2023 \u2013 present", "GenAI, AI agent, Meta AI Award."],
+              ["Product Designer", "Meta", "Menlo Park, CA", "2019 \u2013 2023", ""],
+              ["Data Science Manager", "Minted", "San Francisco, CA", "2015 \u2013 2019", "e-commerce experiences"]
+            ]
+          },
+          tools: {
+            columns: ["tool", "category"],
+            rows: [
+              ["Figma", "design"],
+              ["Cursor", "AI-assisted coding"],
+              ["VS Code", "code"],
+              ["Claude", "AI"],
+              ["SQL", "data"]
+            ]
+          },
+          skills: {
+            columns: ["skill", "area"],
+            rows: [
+              ["GenAI and agentic experiences", "domain"],
+              ["B2B enterprise design", "domain"],
+              ["E-commerce", "domain"],
+              ["SQL & data analysis", "data"],
+              ["Statistics", "foundation"]
+            ]
+          },
+          interview_qa: {
+            columns: ["topic", "question", "answer"],
+            rows: [
+              ["background",
+               "Walk me through your background.",
+               "I\u2019m a lead Product Designer at Meta in New York, building GenAI and agentic messaging experiences. Before design, I was a Data Science Manager at Minted \u2014 I studied statistics and economics at UC Berkeley, and I still write SQL to dig into data directly when informing product decisions."],
+              ["data_in_design",
+               "How do you use data in design?",
+               "Data is my first language: I studied statistics and economics at UC Berkeley and started my career in data science. As a designer, I write SQL to explore questions hands-on, then pair what the numbers say with qualitative insight before making calls. (Sample answer \u2014 Cynthia to refine.)"]
+            ]
+          }
+        };
+
+        var PROMPTS = [
+          { label: "What are your experiences?",
+            sql: "SELECT role, company, location, dates FROM experience;" },
+          { label: "What are you working on?",
+            sql: "SELECT role, company, highlight FROM experience WHERE dates LIKE '%present%';",
+            blurb: "Lead Product Designer at Meta in New York \u2014 building GenAI and agentic messaging experiences (Meta AI Award)." }
+        ];
+        var ROUTES = [
+          { test: /tool/, label: "What tools do you use?", sql: "SELECT tool, category FROM tools;" },
+          { test: /skill/, label: "What skills do you have?", sql: "SELECT skill, area FROM skills;" }
+        ];
+
+        var WORDS = ["SELECT", "FROM", "WHERE", "LIKE", "AND", "TABLES", "HELP", "CLEAR", "*"];
+        Object.keys(DB).forEach(function (t) {
+          WORDS.push(t);
+          DB[t].columns.forEach(function (c) { WORDS.push(c); });
+        });
+
+        // --- tiny WebAudio sound effects (no audio files needed) ---
+        var soundOn = true;
+        var audioCtx = null;
+        var animating = false;
+        function ac() {
+          if (!audioCtx) {
+            try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+            catch (e) { return null; }
+          }
+          if (audioCtx.state === "suspended") audioCtx.resume();
+          return audioCtx;
+        }
+        function tone(freq, dur, type, gain, delay) {
+          if (!soundOn) return;
+          var ctx = ac();
+          if (!ctx) return;
+          var t = ctx.currentTime + (delay || 0);
+          var o = ctx.createOscillator();
+          var g = ctx.createGain();
+          o.type = type || "sine";
+          o.frequency.value = freq;
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(gain || 0.06, t + 0.012);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+          o.connect(g);
+          g.connect(ctx.destination);
+          o.start(t);
+          o.stop(t + dur + 0.05);
+        }
+        function keyClick() { tone(1500 + Math.random() * 1000, 0.03, "square", 0.022); }
+        function queryTick() { tone(520, 0.1, "sine", 0.05); tone(660, 0.1, "sine", 0.05, 0.12); }
+        function successChime() { tone(880, 0.09, "sine", 0.06); tone(1318.5, 0.14, "sine", 0.06, 0.09); }
+        function errorTone() { tone(196, 0.16, "sine", 0.05); }
+
+        function esc(str) {
+          return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+        function highlightSQL(src) {
+          var t = esc(src);
+          t = t.replace(/'[^']*'/g, function (m) { return '<span class="str">' + m + "</span>"; });
+          t = t.replace(/\b(SELECT|FROM|WHERE|LIKE|AND|TABLES|HELP|CLEAR)\b/gi,
+            function (m) { return '<span class="kw">' + m.toUpperCase() + "</span>"; });
+          return t;
+        }
+        function scrollThread() { thread.scrollTop = thread.scrollHeight; }
+
+        function bubbleUser(text) {
+          thread.insertAdjacentHTML("beforeend",
+            '<div class="msg msg-user"><div class="bubble">' + esc(text) + "</div></div>");
+        }
+        function bubbleAI(html) {
+          thread.insertAdjacentHTML("beforeend", '<div class="msg msg-ai">' + html + "</div>");
+        }
+        function noteHtml(n) {
+          var ms = 2 + Math.floor(Math.random() * 8);
+          return '<div class="rows-note">' + n + (n === 1 ? " row" : " rows") + " in " + ms + "ms</div>";
+        }
+
+        // SQL result as a real table: colored header, lighter body
+        function renderTextTable(target, cols, rows) {
+          var html = '<table class="sql-grid"><thead><tr>' +
+            cols.map(function (c) { return "<th>" + esc(c) + "</th>"; }).join("") +
+            "</tr></thead><tbody>";
+          rows.forEach(function (r, ri) {
+            html += '<tr style="animation-delay:' + (ri * 80) + 'ms">' +
+              r.map(function (c) { return "<td>" + esc(c) + "</td>"; }).join("") + "</tr>";
+          });
+          html += "</tbody></table>";
+          target.insertAdjacentHTML("beforeend", html);
+          successChime();
+          scrollThread();
+          return rows.length;
+        }
+        function renderAnswer(target, rows) {
+          var html = "";
+          rows.forEach(function (r) {
+            html += '<div class="answer-card">' + esc(r[r.length - 1]) + "</div>";
+          });
+          target.insertAdjacentHTML("beforeend", html);
+          successChime();
+          scrollThread();
+          return rows.length;
+        }
+        function say(target, html) {
+          target.insertAdjacentHTML("beforeend", '<div class="dim">' + html + "</div>");
+          scrollThread();
+        }
+
+        function summarize(cols, rows) {
+          if (cols.length === 1 && cols[0] === "answer") return null;
+          var bits = rows.map(function (r) {
+            var cells = r.slice(0, 2).map(function (c) { return String(c); }).filter(Boolean);
+            return cells.join(" \u2014 ");
+          }).filter(Boolean);
+          var s = bits.join("; ");
+          return s.length > 240 ? s.slice(0, 240) + "\u2026" : s;
+        }
+
+        function runSQL(q, target, done) {
+          var up = q.toUpperCase();
+
+          if (up === "TABLES") {
+            var trows = Object.keys(DB).map(function (t) { return [t]; });
+            var n0 = renderTextTable(target, ["table"], trows);
+            done(n0, summarize(["table"], trows));
+            return;
+          }
+          if (up === "HELP") {
+            say(target, "Commands: SELECT ... FROM ... [WHERE ...] &middot; TABLES &middot; HELP &middot; CLEAR<br>" +
+              "Tip: press Tab to autocomplete table and column names.");
+            done(0, null);
+            return;
+          }
+          if (up === "CLEAR") {
+            thread.innerHTML = "";
+            welcome();
+            done(0, null);
+            return;
+          }
+
+          var m = q.match(/^SELECT\s+(.+?)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+))?$/i);
+          if (!m) {
+            say(target, "Hmm, I only speak simple SELECTs so far. Try: SELECT * FROM experience;");
+            errorTone();
+            done(0, null);
+            return;
+          }
+          var table = DB[m[2].toLowerCase()];
+          if (!table) {
+            var guess = Object.keys(DB).filter(function (t) { return t.indexOf(m[2].toLowerCase().slice(0, 3)) === 0; })[0];
+            say(target, "No table named \u2018" + esc(m[2]) + "\u2019." +
+              (guess ? " Did you mean <b>" + esc(guess) + "</b>?" : " Try TABLES to see what\u2019s here."));
+            errorTone();
+            done(0, null);
+            return;
+          }
+
+          var cols;
+          if (m[1].trim() === "*") {
+            cols = table.columns.slice();
+          } else {
+            cols = m[1].split(",").map(function (c) { return c.trim().toLowerCase(); });
+            var bad = cols.filter(function (c) { return table.columns.indexOf(c) === -1; });
+            if (bad.length) {
+              say(target, "No column \u2018" + esc(bad[0]) + "\u2019 in " + esc(m[2].toLowerCase()) +
+                ". Columns: " + esc(table.columns.join(", ")));
+              errorTone();
+              done(0, null);
+              return;
+            }
+          }
+
+          var rows = table.rows.slice();
+          if (m[3]) {
+            var w = m[3].match(/^(\w+)\s*(=|LIKE)\s*'(.*)'$/i);
+            if (!w || table.columns.indexOf(w[1].toLowerCase()) === -1) {
+              say(target, "I only understand WHERE column = \u2018value\u2019 or WHERE column LIKE \u2018%value%\u2019.");
+              errorTone();
+              done(0, null);
+              return;
+            }
+            var ci = table.columns.indexOf(w[1].toLowerCase());
+            var val = w[3].toLowerCase();
+            rows = rows.filter(function (r) {
+              var cell = String(r[ci]).toLowerCase();
+              return w[2].toUpperCase() === "LIKE" ? cell.indexOf(val.replace(/%/g, "")) !== -1 : cell === val;
+            });
+          }
+
+          var idxs = cols.map(function (c) { return table.columns.indexOf(c); });
+          var projected = rows.map(function (r) { return idxs.map(function (i) { return r[i]; }); });
+
+          if (projected.length === 0) {
+            say(target, "0 rows \u2014 no matches.");
+            errorTone();
+            done(0, null);
+            return;
+          }
+          var summary = summarize(cols, projected);
+          if (cols.length === 1 && cols[0] === "answer") {
+            done(renderAnswer(target, projected), null);
+          } else {
+            done(renderTextTable(target, cols, projected), summary);
+          }
+        }
+
+        function typeInto(qEl, sql, done) {
+          animating = true;
+          input.disabled = true;
+          var i = 0;
+          var iv = setInterval(function () {
+            i++;
+            qEl.innerHTML = highlightSQL(sql.slice(0, i)) + '<span class="caret"></span>';
+            keyClick();
+            if (i >= sql.length) {
+              clearInterval(iv);
+              qEl.innerHTML = highlightSQL(sql);
+              setTimeout(function () {
+                input.disabled = false;
+                animating = false;
+                done();
+              }, 350);
+            }
+          }, 26);
+        }
+
+        function ask(label, sql, animate, blurb) {
+          if (animating) return;
+          sql = sql.replace(/;+\s*$/, "");
+          consoleEl.classList.add("chatting");
+          bubbleUser(label);
+          var resp = document.createElement("div");
+          resp.className = "msg msg-ai";
+          resp.innerHTML = '<div class="sql-block">' +
+            '<div class="sql-queryline"><code class="sql-q"></code></div>' +
+            '<div class="sql-res"></div></div>';
+          thread.appendChild(resp);
+          var qEl = resp.querySelector(".sql-q");
+          var resEl = resp.querySelector(".sql-res");
+          scrollThread();
+          var run = function () {
+            resEl.innerHTML = '<div class="exec-indicator">executing<span class="dots"></span></div>';
+            scrollThread();
+            queryTick();
+            setTimeout(function () {
+              resEl.innerHTML = "";
+              runSQL(sql, resEl, function () {
+                scrollThread();
+              });
+            }, 750);
+          };
+          if (animate) typeInto(qEl, sql, run);
+          else { qEl.innerHTML = highlightSQL(sql); run(); }
+        }
+
+        function routeText(t) {
+          var l = t.toLowerCase();
+          if (/^(select|tables|help|clear)\b/.test(l)) return { label: t, sql: t };
+          for (var i = 0; i < PROMPTS.length; i++) {
+            var key = PROMPTS[i].label.toLowerCase()
+              .replace(/^(what's|what is|what are|what|your)\s+/, "").replace(/\?$/, "");
+            if (key && l.indexOf(key) !== -1) return PROMPTS[i];
+          }
+          for (var j = 0; j < ROUTES.length; j++) {
+            if (ROUTES[j].test.test(l)) return ROUTES[j];
+          }
+          if (/experience|work|job|career|background|role/.test(l)) return PROMPTS[0];
+          return null;
+        }
+
+        function autocomplete() {
+          var pos = input.selectionStart || input.value.length;
+          var before = input.value.slice(0, pos);
+          var m = before.match(/(\w+)$/);
+          if (!m) return;
+          var frag = m[1];
+          var matches = WORDS.filter(function (w) {
+            return w.toLowerCase().indexOf(frag.toLowerCase()) === 0 && w.toLowerCase() !== frag.toLowerCase();
+          });
+          if (!matches.length) return;
+          var completion = matches[0];
+          for (var i = 1; i < matches.length; i++) {
+            var j = 0;
+            while (j < completion.length && j < matches[i].length &&
+                   completion[j].toLowerCase() === matches[i][j].toLowerCase()) j++;
+            completion = completion.slice(0, j);
+          }
+          input.value = before.slice(0, before.length - frag.length) + completion + input.value.slice(pos);
+          var np = before.length - frag.length + completion.length;
+          input.setSelectionRange(np, np);
+        }
+
+        PROMPTS.forEach(function (p) {
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "suggest";
+          btn.innerHTML = '<span class="send-ico"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m600-200-56-57 143-143H300q-75 0-127.5-52.5T120-580q0-75 52.5-127.5T300-760h20v80h-20q-42 0-71 29t-29 71q0 42 29 71t71 29h387L544-624l56-56 240 240-240 240Z"/></svg></span>' + esc(p.label);
+          btn.addEventListener("click", function () {
+            btn.style.display = "none";
+            ask(p.label, p.sql, true, p.blurb);
+          });
+          suggestRow.appendChild(btn);
+        });
+
+        input.addEventListener("keydown", function (e) {
+          if (e.key === "Tab") { e.preventDefault(); autocomplete(); }
+          else if (e.key === "Enter") {
+            var v = input.value.trim();
+            if (!v || animating) return;
+            input.value = "";
+            var r = routeText(v);
+            if (r) {
+              ask(v, r.sql, false, r.blurb);
+            } else {
+              bubbleUser(v);
+              bubbleAI('<span class="email-fallback">That\u2019s not in my database yet. Please ' +
+                '<a href="mailto:' + EMAIL + '">email Cynthia</a> for an answer.</span>');
+              scrollThread();
+            }
+          }
+        });
+
+        var ICON_SND_ON = '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M560-131v-82q90-26 145-100t55-168q0-94-55-168T560-749v-82q124 28 202 125.5T840-481q0 127-78 224.5T560-131ZM120-360v-240h160l200-200v640L280-360H120Zm440 40v-322q47 22 73.5 66t26.5 96q0 51-26.5 94.5T560-320ZM400-606l-86 86H200v80h114l86 86v-252ZM300-480Z"/></svg>';
+        var ICON_SND_OFF = '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m616-320-56-56 104-104-104-104 56-56 104 104 104-104 56 56-104 104 104 104-56 56-104-104-104 104Zm-496-40v-240h160l200-200v640L280-360H120Zm280-246-86 86H200v80h114l86 86v-252ZM300-480Z"/></svg>';
+        var sndBtn = document.getElementById("sound-toggle");
+        if (sndBtn) {
+          sndBtn.innerHTML = ICON_SND_ON;
+          sndBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            soundOn = !soundOn;
+            sndBtn.innerHTML = soundOn ? ICON_SND_ON : ICON_SND_OFF;
+            sndBtn.setAttribute("aria-label", soundOn ? "Mute sound effects" : "Unmute sound effects");
+            if (soundOn) successChime();
+          });
+        }
+
+        function welcome() {
+          bubbleAI("Hey \u2014 I\u2019m Cynthia\u2019s career database. Ask me anything, or tap a suggestion below.");
+          scrollThread();
+        }
+        welcome();
       })();
     </script>
   </body>
