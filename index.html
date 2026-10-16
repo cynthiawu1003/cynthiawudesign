@@ -363,12 +363,7 @@
       }
       .msg-ai .dim { color: var(--ed-muted); }
       .msg-ai a { color: var(--ed-accent); }
-      .msg-ai .email-fallback a {
-        color: inherit;
-        background: none;
-        text-decoration: underline;
-        text-underline-offset: 2px;
-      }
+      .email-fallback { font-size: 12.5px; }
       /* SQL block inside the chat response */
       .sql-block {
         margin-top: 0.5rem;
@@ -449,7 +444,7 @@
         transition: background 200ms;
       }
       .suggest:hover { background: var(--ed-bubble); }
-      .suggest .send-ico { margin-right: 0.35em; }
+      .suggest .send-ico { margin-right: 0.4em; vertical-align: -1px; }
       .sql-divider { height: 1px; background: var(--ed-faint-line); margin: 0.5rem 0; }
 
       .editor-inputrow {
@@ -705,9 +700,9 @@
         };
 
         var PROMPTS = [
-          { label: "What's your experience?",
+          { label: "Your experience?",
             sql: "SELECT role, company, location, dates FROM experience;" },
-          { label: "What are you working on right now?",
+          { label: "What are you working on?",
             sql: "SELECT role, company, highlight FROM experience WHERE dates LIKE '%present%';",
             blurb: "Lead Product Designer at Meta in New York \u2014 building GenAI and agentic messaging experiences (Meta AI Award)." }
         ];
@@ -961,8 +956,9 @@
           var l = t.toLowerCase();
           if (/^(select|tables|help|clear)\b/.test(l)) return { label: t, sql: t };
           for (var i = 0; i < PROMPTS.length; i++) {
-            var key = PROMPTS[i].label.toLowerCase().replace(/^(what's|what is|what are|what)\s+/, "");
-            if (l.indexOf(key) !== -1) return PROMPTS[i];
+            var key = PROMPTS[i].label.toLowerCase()
+              .replace(/^(what's|what is|what are|what|your)\s+/, "").replace(/\?$/, "");
+            if (key && l.indexOf(key) !== -1) return PROMPTS[i];
           }
           for (var j = 0; j < ROUTES.length; j++) {
             if (ROUTES[j].test.test(l)) return ROUTES[j];
@@ -997,7 +993,7 @@
           var btn = document.createElement("button");
           btn.type = "button";
           btn.className = "suggest";
-          btn.innerHTML = '<span class="send-ico">\u23ce</span>' + esc(p.label);
+          btn.innerHTML = '<svg class="send-ico" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>' + esc(p.label);
           btn.addEventListener("click", function () {
             btn.style.display = "none";
             ask(p.label, p.sql, true, p.blurb);
@@ -1016,8 +1012,8 @@
               ask(r.label, r.sql, false, r.blurb);
             } else {
               bubbleUser(v);
-              bubbleAI('<span class="email-fallback">That\u2019s not in my database yet \u2014 ' +
-                '<a href="mailto:' + EMAIL + '">Please email Cynthia for an answer</a>.</span>');
+              bubbleAI('<span class="email-fallback">That\u2019s not in my database yet. ' +
+                '<a href="mailto:' + EMAIL + '">Please email Cynthia for an answer.</a></span>');
               scrollThread();
             }
           }
