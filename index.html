@@ -335,6 +335,7 @@
         line-height: 1;
       }
       .sound-toggle:hover { color: var(--ed-text); }
+      .sound-toggle svg { width: 16px; height: 16px; display: block; fill: currentColor; }
       .chat-thread {
         padding: 1rem 1.2rem 0.2rem;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -512,7 +513,7 @@
         <div class="editor console" id="console">
           <div class="editor-bar">
             <span class="editor-title">cynthia_resume.db</span>
-            <button type="button" class="sound-toggle" id="sound-toggle" aria-label="Mute sound effects">&#x1F50A;</button>
+            <button type="button" class="sound-toggle" id="sound-toggle" aria-label="Mute sound effects"></button>
           </div>
           <div class="chat-thread" id="chat-thread" aria-live="polite"></div>
           <div class="suggest-above" id="suggest-above">
@@ -1010,14 +1011,19 @@
           }
         });
 
+        var ICON_SND_ON = '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M560-131v-82q90-26 145-100t55-168q0-94-55-168T560-749v-82q124 28 202 125.5T840-481q0 127-78 224.5T560-131ZM120-360v-240h160l200-200v640L280-360H120Zm440 40v-322q47 22 73.5 66t26.5 96q0 51-26.5 94.5T560-320ZM400-606l-86 86H200v80h114l86 86v-252ZM300-480Z"/></svg>';
+        var ICON_SND_OFF = '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="m616-320-56-56 104-104-104-104 56-56 104 104 104-104 56 56-104 104 104 104-56 56-104-104-104 104Zm-496-40v-240h160l200-200v640L280-360H120Zm280-246-86 86H200v80h114l86 86v-252ZM300-480Z"/></svg>';
         var sndBtn = document.getElementById("sound-toggle");
-        if (sndBtn) sndBtn.addEventListener("click", function (e) {
-          e.stopPropagation();
-          soundOn = !soundOn;
-          sndBtn.innerHTML = soundOn ? "&#x1F50A;" : "&#x1F507;";
-          sndBtn.setAttribute("aria-label", soundOn ? "Mute sound effects" : "Unmute sound effects");
-          if (soundOn) successChime();
-        });
+        if (sndBtn) {
+          sndBtn.innerHTML = ICON_SND_ON;
+          sndBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            soundOn = !soundOn;
+            sndBtn.innerHTML = soundOn ? ICON_SND_ON : ICON_SND_OFF;
+            sndBtn.setAttribute("aria-label", soundOn ? "Mute sound effects" : "Unmute sound effects");
+            if (soundOn) successChime();
+          });
+        }
 
         function welcome() {
           bubbleAI("Hey \u2014 I\u2019m Cynthia\u2019s career database. Ask me anything, or tap a suggestion below.");
