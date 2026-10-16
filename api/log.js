@@ -66,6 +66,6 @@ module.exports = async function (req, res) {
     });
     res.status(200).json({ ok: true });
   } catch (e) {
-    res.status(500).json({ ok: false });
+    res.status(500).json({ ok: false, error: String((e && e.message) || e).slice(0, 200) });
   }
 };
