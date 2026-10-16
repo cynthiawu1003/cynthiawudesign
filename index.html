@@ -652,7 +652,7 @@
           experience: {
             columns: ["role", "company", "location", "dates", "highlight"],
             rows: [
-              ["Lead Product Designer", "Meta", "New York, NY", "Feb 2023 \u2013 present", "GenAI messaging \u00b7 Meta AI Award"],
+              ["Lead Product Designer", "Meta", "New York, NY", "Feb 2023 \u2013 present", "GenAI, AI agent, Meta AI Award."],
               ["Product Designer", "Meta", "Menlo Park, CA", "2019 \u2013 2023", ""],
               ["Data Science Manager", "Minted", "San Francisco, CA", "2015 \u2013 2019", "e-commerce experiences"]
             ]
@@ -691,7 +691,7 @@
         };
 
         var PROMPTS = [
-          { label: "What is your working experience?",
+          { label: "What are your experiences?",
             sql: "SELECT role, company, location, dates FROM experience;" },
           { label: "What are you working on?",
             sql: "SELECT role, company, highlight FROM experience WHERE dates LIKE '%present%';",
